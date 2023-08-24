@@ -8,7 +8,8 @@
 import SwiftUI
 
 struct GameView: View {
-    @StateObject var game = Game()
+//    @StateObject var game = Game()
+    @StateObject var game = GameAI(.white)
     @Binding var selectedTab: MainNavigationView.Tabs?
     
     var body: some View {
@@ -22,9 +23,24 @@ struct GameView: View {
             VStack {
                 TakenFiguresListView(figures: game.figuresTakenByColor[.black]!)
                 BoardView(board: game.board)
-                    .environmentObject(game)
+                    .environmentObject(game as Game)
                     .disabled(game.isGameEnded)
                 TakenFiguresListView(figures: game.figuresTakenByColor[.white]!)
+                
+                Button {
+                    game.undoMove()
+                } label: {
+                    Text("Undo".uppercased())
+                        .font(.title3.bold())
+                        .foregroundColor(.white)
+                        .padding(10)
+                        .frame(minWidth: 150)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(.green)
+                        )
+                }
+
             }
             
             if !game.figuresForUpdate.isEmpty {
@@ -47,15 +63,20 @@ struct GameView: View {
             
             if game.isGameEnded {
                 VStack {
-                    Text("Game Over!".uppercased())
-                        .font(.title.bold())
-                    
                     if let winner = game.winner {
-                        Text("\(winner.rawValue) won".capitalized)
+                        Text("Победа \(winner == .white ? "Белых" : "Черных")!".capitalized)
+                            .font(.title.bold())
                     } else {
-                        Text("Draw")
+                        Text("Ничья")
+                            .font(.title.bold())
                     }
                 }
+                .foregroundColor(.black)
+                .padding(40)
+                .background(
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(.white)
+                )
             }
         }
     }

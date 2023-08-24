@@ -11,11 +11,16 @@ struct DismissButtonView: View {
     var action: () -> ()
     
     var body: some View {
-        Button(action: action){
-            Image(systemName: "chevron.left")
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
-                .padding()
-                .foregroundColor(.white)
+        VStack {
+            HStack {
+                Button(action: action){
+                    Image(systemName: "chevron.left")
+                        .padding()
+                        .foregroundColor(.white)
+                }
+                Spacer()
+            }
+            Spacer()
         }
     }
 }

@@ -10,10 +10,10 @@ import Foundation
 
 class Board: ObservableObject {
     @Published var figures: [Coordinate:Figure] = [:]
-    private var currentFen: String
+    var moves = [Move]()
+    var kings = [King]()
     
     init(_ fen: String) {
-        currentFen = fen
         let rows = fen.split(separator: " ")[0]
         let rowsInfo = rows.split(separator: "/")
         
@@ -39,7 +39,9 @@ class Board: ObservableObject {
                 case "q":
                     figures[Coordinate(x: x, y: y)] = Queen(coordinate: Coordinate(x: x, y: y), color: color)
                 case "k":
-                    figures[Coordinate(x: x, y: y)] = King(coordinate: Coordinate(x: x, y: y), color: color)
+                    let king = King(coordinate: Coordinate(x: x, y: y), color: color)
+                    figures[Coordinate(x: x, y: y)] = king
+                    kings.append(king)
                 case "p":
                     figures[Coordinate(x: x, y: y)] = Pawn(coordinate: Coordinate(x: x, y: y), color: color)
                 default:
@@ -47,6 +49,9 @@ class Board: ObservableObject {
                 }
                 x += 1
             }
+        }
+        if kings[0].color == .black {
+            (kings[0], kings[1]) = (kings[1], kings[0])
         }
     }
     
@@ -95,11 +100,26 @@ class Board: ObservableObject {
     }
     
     @discardableResult func makeMove(from oldCoordinate: Coordinate, to newCoordinate: Coordinate) -> Figure? {
+        moves.append(Move(from: oldCoordinate, to: newCoordinate, figureTaken: figures[newCoordinate]))
         figures[newCoordinate] = figures[oldCoordinate]
         figures[newCoordinate]?.coordinate = newCoordinate
         figures[oldCoordinate] = nil
-        currentFen = toFen()
+        
         return figures[newCoordinate]
+    }
+    
+    @discardableResult func undoMove() -> Figure {
+        if moves.isEmpty {
+            fatalError("Can't undo move without moves made!")
+        }
+        let move = moves.removeLast()
+        if figures[move.to]!.upgradedAtMove == moves.count + 1 {
+            figures[move.to] = Pawn(coordinate: move.to, color: figures[move.to]!.color)
+        }
+        figures[move.from] = figures[move.to]
+        figures[move.from]!.coordinate = move.from
+        figures[move.to] = move.figureTaken
+        return figures[move.from]!
     }
     
     func isKingNotCheckedAfterMove(from oldCoordinate: Coordinate, to newCoordinate: Coordinate) -> Bool {
@@ -108,9 +128,10 @@ class Board: ObservableObject {
             return false
         }
         
-        let boardCopy = Board(currentFen)
-        boardCopy.makeMove(from: oldCoordinate, to: newCoordinate)
-        return !boardCopy.isKingChecked(of: figure.color)
+        makeMove(from: oldCoordinate, to: newCoordinate)
+        let r = !isKingChecked(of: figure.color)
+        undoMove()
+        return r
     }
     
     func isSquareEmpty(at coordinate: Coordinate) -> Bool {
@@ -120,7 +141,7 @@ class Board: ObservableObject {
     func isSquareUnderAttack(_ coordinate: Coordinate, _ color: Figure.Color) -> Bool {
         let enemyFigures = getFigures(color)
         for enemyFigure in enemyFigures {
-            if enemyFigure.getAvailableForAttackCoordinates(self).contains(coordinate) {
+            if enemyFigure.isSquareAvailableForAttack(self, coordinate) {
                 return true
             }
         }
@@ -143,9 +164,7 @@ class Board: ObservableObject {
     }
     
     func getKing(_ color: Figure.Color) -> King {
-        getFigures(color).filter { figure in
-            figure is King
-        }.first as! King
+        color == .white ? kings[0] : kings[1]
     }
     
     static let example = Board("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1")

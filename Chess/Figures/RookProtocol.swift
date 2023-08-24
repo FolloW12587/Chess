@@ -14,15 +14,11 @@ protocol RookProtocol {
 
 extension RookProtocol {
     func getRookShifts() -> Set<CoordinateShift> {
-        var coordinateShifts: Set<CoordinateShift> = []
-        
-        for i in 1...7 {
-            coordinateShifts.insert(CoordinateShift(dx: i, dy: 0))
-            coordinateShifts.insert(CoordinateShift(dx: -i, dy: 0))
-            coordinateShifts.insert(CoordinateShift(dx: 0, dy: i))
-            coordinateShifts.insert(CoordinateShift(dx: 0, dy: -i))
-        }
-        
-        return coordinateShifts
+        [
+            CoordinateShift(dx: 0, dy: 1),
+            CoordinateShift(dx: 0, dy: -1),
+            CoordinateShift(dx: 1, dy: 0),
+            CoordinateShift(dx: -1, dy: 0)
+        ]
     }
 }

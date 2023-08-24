@@ -8,51 +8,63 @@
 import Foundation
 
 extension Board {
-    func hasFiguresBetween(_ coordinate1: Coordinate, _ coordinate2: Coordinate) -> Bool {
-        if coordinate1.x == coordinate2.x {
-            return hasFiguresBetweenVertical(coordinate1, coordinate2)
+    func hasFiguresBetween(_ lhs: Coordinate, _ rhs: Coordinate) -> Bool {
+        if isOnSameVertical(lhs, rhs) {
+            return hasFiguresBetweenVertical(lhs, rhs)
         }
-        if coordinate1.y == coordinate2.y {
-            return hasFiguresBetweenHorizontal(coordinate1, coordinate2)
+        if isOnSameHorizontal(lhs, rhs) {
+            return hasFiguresBetweenHorizontal(lhs, rhs)
         }
-        if abs(coordinate1.x - coordinate2.x) == abs(coordinate1.y - coordinate2.y) {
-            return hasFiguresBetweenDiagonal(coordinate1, coordinate2)
+        if isOnSameDiagonal(lhs, rhs) {
+            return hasFiguresBetweenDiagonal(lhs, rhs)
         }
         
         return false
     }
     
-    func hasFiguresBetweenDiagonal(_ coordinate1: Coordinate, _ coordinate2: Coordinate) -> Bool {
+    func isOnSameVertical(_ lhs: Coordinate, _ rhs: Coordinate) -> Bool {
+        lhs.x == rhs.x
+    }
+    
+    func isOnSameHorizontal(_ lhs: Coordinate, _ rhs: Coordinate) -> Bool {
+        lhs.y == rhs.y
+    }
+    
+    func isOnSameDiagonal(_ lhs: Coordinate, _ rhs: Coordinate) -> Bool {
+        abs(lhs.x - rhs.x) == abs(lhs.y - rhs.y)
+    }
+    
+    func hasFiguresBetweenDiagonal(_ lhs: Coordinate, _ rhs: Coordinate) -> Bool {
         // MARK: coordinates should be on the same diagonal
-        let xShift = coordinate1.x > coordinate2.x ? -1 : 1
-        let yShift = coordinate1.y > coordinate2.y ? -1 : 1
+        let xShift = lhs.x > rhs.x ? -1 : 1
+        let yShift = lhs.y > rhs.y ? -1 : 1
         
-        for i in 1..<abs(coordinate1.x - coordinate2.x) {
-            if !isSquareEmpty(at: Coordinate(x: coordinate1.x + i*xShift, y: coordinate1.y + i*yShift)) {
+        for i in 1..<abs(lhs.x - rhs.x) {
+            if !isSquareEmpty(at: Coordinate(x: lhs.x + i*xShift, y: lhs.y + i*yShift)) {
                 return true
             }
         }
         return false
     }
     
-    func hasFiguresBetweenVertical(_ coordinate1: Coordinate, _ coordinate2: Coordinate) -> Bool {
+    func hasFiguresBetweenVertical(_ lhs: Coordinate, _ rhs: Coordinate) -> Bool {
         // MARK: coordinates should be in the same column
-        let (l, h) = (min(coordinate1.y, coordinate2.y), max(coordinate1.y, coordinate2.y))
+        let (l, h) = (min(lhs.y, rhs.y), max(lhs.y, rhs.y))
         
         for i in l+1..<h {
-            if !isSquareEmpty(at: Coordinate(x: coordinate1.x, y: i)) {
+            if !isSquareEmpty(at: Coordinate(x: lhs.x, y: i)) {
                 return true
             }
         }
         return false
     }
     
-    func hasFiguresBetweenHorizontal(_ coordinate1: Coordinate, _ coordinate2: Coordinate) -> Bool {
+    func hasFiguresBetweenHorizontal(_ lhs: Coordinate, _ rhs: Coordinate) -> Bool {
         // MARK: coordinates should be in the same row
-        let (l, h) = (min(coordinate1.x, coordinate2.x), max(coordinate1.x, coordinate2.x))
+        let (l, h) = (min(lhs.x, rhs.x), max(lhs.x, rhs.x))
         
         for i in l+1..<h {
-            if !isSquareEmpty(at: Coordinate(x: i, y: coordinate1.y)) {
+            if !isSquareEmpty(at: Coordinate(x: i, y: lhs.y)) {
                 return true
             }
         }

@@ -33,11 +33,14 @@ class Pawn: Figure {
             return board.isSquareEmpty(at: coordinate) && !board.hasFiguresBetween(self.coordinate, coordinate) && board.isKingNotCheckedAfterMove(from: self.coordinate, to: coordinate)
         }
         
-        return !board.isSquareEmpty(at: coordinate) && board.getFigure(at: coordinate)!.color != self.color && board.isKingNotCheckedAfterMove(from: self.coordinate, to: coordinate)
+        let figure = board.getFigure(at: coordinate)
+        return figure != nil && figure!.color != self.color && board.isKingNotCheckedAfterMove(from: self.coordinate, to: coordinate)
     }
     
     override func isSquareAvailableForAttack(_ board: Board, _ coordinate: Coordinate) -> Bool {
-        self.coordinate.x != coordinate.x
+        let multiplier = color == .white ? -1 : 1
+        let shift = (self.coordinate - coordinate)*multiplier
+        return shift == CoordinateShift(dx: 1, dy: 1) || shift == CoordinateShift(dx: -1, dy: 1)
     }
     
     func isOnLastLine() -> Bool {

@@ -18,4 +18,8 @@ class Rook: LongRangeFigure, RookProtocol {
     override func getMoveShifts() -> Set<CoordinateShift> {
         self.getRookShifts()
     }
+    
+    override func isSquareOnAttackLine(_ board: Board, _ coordinate: Coordinate) -> Bool {
+        board.isOnSameHorizontal(self.coordinate, coordinate) || board.isOnSameVertical(self.coordinate, coordinate)
+    }
 }

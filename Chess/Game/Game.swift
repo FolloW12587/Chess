@@ -18,15 +18,15 @@ class Game: ObservableObject {
     @Published var figuresTakenByColor: [Figure.Color: [Figure]] = [.white: [], .black: []]
     @Published var figuresForUpdate: [Figure] = []
     @Published var kingCheckedCoordinate: Coordinate? = nil
+    @Published var lastMove: Move? = nil
     
     @Published var isGameEnded = false
     var winner: Figure.Color? = nil
     
     init() {
         self.board = Board(
-            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-//            "r1bqkb1r/pP1p2pp/5p2/3Q4/2B1Kn2/3p2B1/P1PPPPPP/RN4NR w HAkq - 0 1"
-//            "rnbqkb1r/pp1p2pp/5p2/1p1Q4/2B1Kn2/1P1p2B1/P1PPPPPP/RN4NR w HAkq - 0 1"
+//            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+            "8/1k6/5P2/8/4K3/8/1p6/8 w - - 0 1"
         )
     }
     
@@ -59,7 +59,7 @@ class Game: ObservableObject {
         makeMove(to: coordinate)
     }
     
-    @discardableResult private func checkForDrawOrStaleMate() -> Bool {
+    @discardableResult func checkForDrawOrStaleMate() -> Bool {
         for figure in board.getFigures(currentColor) {
             if figure.getAvailableForMoveCoordinates(board).count > 0 {
                 return false
@@ -74,7 +74,7 @@ class Game: ObservableObject {
         return true
     }
     
-    private func makeMove(to coordinate: Coordinate) {
+    func makeMove(to coordinate: Coordinate) {
         if !board.isSquareEmpty(at: coordinate) {
             figuresTakenByColor[selectedFigure!.color]?.append(board.getFigure(at: coordinate)!)
         }
@@ -82,20 +82,21 @@ class Game: ObservableObject {
             prepareFiguresForUpdate(at: coordinate, of: pawn.color)
             return
         }
+        lastMove = board.moves.last
         rotatePlayer()
         checkForDrawOrStaleMate()
     }
     
-    private func prepareFiguresForUpdate(at coordinate: Coordinate, of color: Figure.Color) {
+    func prepareFiguresForUpdate(at coordinate: Coordinate, of color: Figure.Color) {
         figuresForUpdate = [
-            Knight(coordinate: coordinate, color: color),
-            Rook(coordinate: coordinate, color: color),
-            Bishop(coordinate: coordinate, color: color),
-            Queen(coordinate: coordinate, color: color),
+            Knight(coordinate: coordinate, color: color, board.moves.count),
+            Rook(coordinate: coordinate, color: color, board.moves.count),
+            Bishop(coordinate: coordinate, color: color, board.moves.count),
+            Queen(coordinate: coordinate, color: color, board.moves.count),
         ]
     }
     
-    private func rotatePlayer() {
+    func rotatePlayer() {
         selectedFigure = nil
         availableMoves = []
         figuresForUpdate = []
@@ -106,7 +107,20 @@ class Game: ObservableObject {
         }
     }
     
-    private func selectFigure(at coordinate: Coordinate) {
+    func undoMove() {
+        if board.moves.isEmpty {
+            return
+        }
+            
+        if board.moves.last?.figureTaken != nil {
+            figuresTakenByColor[currentColor.opposite()]?.removeLast()
+        }
+        board.undoMove()
+        lastMove = board.moves.last
+        rotatePlayer()
+    }
+    
+    func selectFigure(at coordinate: Coordinate) {
         guard let figure = board.getFigure(at: coordinate), figure.color == currentColor else {
             return
         }
@@ -115,7 +129,7 @@ class Game: ObservableObject {
         availableMoves = figure.getAvailableForMoveCoordinates(board)
     }
     
-    private func checkForReselect(at coordinate: Coordinate) -> Bool {
+    func checkForReselect(at coordinate: Coordinate) -> Bool {
         guard selectedFigure != nil, let figure = board.getFigure(at: coordinate), figure.color == selectedFigure?.color else {
             return false
         }

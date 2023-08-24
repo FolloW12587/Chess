@@ -27,4 +27,8 @@ class Knight: Figure {
             CoordinateShift(dx: -1, dy: -2),
         ]
     }
+    
+    override func isSquareAvailableForAttack(_ board: Board, _ coordinate: Coordinate) -> Bool {
+        getMoveShifts().contains(self.coordinate - coordinate)
+    }
 }

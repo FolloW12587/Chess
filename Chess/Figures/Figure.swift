@@ -12,10 +12,12 @@ class Figure: Identifiable {
     var coordinate: Coordinate
     let color: Figure.Color
     var value: Int { 0 }
+    var upgradedAtMove: Int?
     
-    init(coordinate: Coordinate, color: Figure.Color) {
+    init(coordinate: Coordinate, color: Figure.Color, _ upgradedAtMove: Int? = nil) {
         self.coordinate = coordinate
         self.color = color
+        self.upgradedAtMove = upgradedAtMove
     }
     
     func getAssetName() -> String {
@@ -39,27 +41,12 @@ class Figure: Identifiable {
     }
     
     func isSquareAvailableForMove(_ board: Board, _ coordinate: Coordinate) -> Bool {
-        (board.isSquareEmpty(at: coordinate) || board.getFigure(at: coordinate)!.color != self.color) && board.isKingNotCheckedAfterMove(from: self.coordinate, to: coordinate)
+        let figure = board.getFigure(at: coordinate)
+        return (figure == nil || figure!.color != self.color) && board.isKingNotCheckedAfterMove(from: self.coordinate, to: coordinate)
     }
     
     func getMoveShifts() -> Set<CoordinateShift> {
         []
-    }
-    
-    func getAvailableForAttackCoordinates(_ board: Board) -> Set<Coordinate> {
-        var output: Set<Coordinate> = []
-        let shifts = self.getMoveShifts()
-        for shift in shifts {
-            let coordinate = self.coordinate.from(shift: shift)
-            if !coordinate.isValid {
-                continue
-            }
-            if isSquareAvailableForAttack(board, coordinate) {
-                output.insert(coordinate)
-            }
-        }
-        
-        return output
     }
     
     func isSquareAvailableForAttack(_ board: Board, _ coordinate: Coordinate) -> Bool {

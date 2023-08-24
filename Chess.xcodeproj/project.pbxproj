@@ -11,6 +11,9 @@
 		A109140E2A94F12000303BF5 /* TakenFiguresListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A109140D2A94F12000303BF5 /* TakenFiguresListView.swift */; };
 		A10D2A5B2A8B3CFE00D9A4AA /* LongRangeFigure.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10D2A5A2A8B3CFE00D9A4AA /* LongRangeFigure.swift */; };
 		A10D2A5D2A8B477000D9A4AA /* Board - hasFiguresBetween.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10D2A5C2A8B477000D9A4AA /* Board - hasFiguresBetween.swift */; };
+		A12C555F2A95F53500D025C1 /* GameAI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A12C555E2A95F53500D025C1 /* GameAI.swift */; };
+		A12C55612A95F65A00D025C1 /* Move.swift in Sources */ = {isa = PBXBuildFile; fileRef = A12C55602A95F65A00D025C1 /* Move.swift */; };
+		A12C55642A95FE8800D025C1 /* AISearch.swift in Sources */ = {isa = PBXBuildFile; fileRef = A12C55632A95FE8800D025C1 /* AISearch.swift */; };
 		A13FCB552A79308500E379F2 /* Board.swift in Sources */ = {isa = PBXBuildFile; fileRef = A13FCB542A79308500E379F2 /* Board.swift */; };
 		A13FCB572A79333700E379F2 /* Coordinate.swift in Sources */ = {isa = PBXBuildFile; fileRef = A13FCB562A79333700E379F2 /* Coordinate.swift */; };
 		A13FCB592A793C4600E379F2 /* DeviceBounds.swift in Sources */ = {isa = PBXBuildFile; fileRef = A13FCB582A793C4600E379F2 /* DeviceBounds.swift */; };
@@ -41,6 +44,9 @@
 		A109140D2A94F12000303BF5 /* TakenFiguresListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TakenFiguresListView.swift; sourceTree = "<group>"; };
 		A10D2A5A2A8B3CFE00D9A4AA /* LongRangeFigure.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LongRangeFigure.swift; sourceTree = "<group>"; };
 		A10D2A5C2A8B477000D9A4AA /* Board - hasFiguresBetween.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Board - hasFiguresBetween.swift"; sourceTree = "<group>"; };
+		A12C555E2A95F53500D025C1 /* GameAI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameAI.swift; sourceTree = "<group>"; };
+		A12C55602A95F65A00D025C1 /* Move.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Move.swift; sourceTree = "<group>"; };
+		A12C55632A95FE8800D025C1 /* AISearch.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AISearch.swift; sourceTree = "<group>"; };
 		A13FCB542A79308500E379F2 /* Board.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Board.swift; sourceTree = "<group>"; };
 		A13FCB562A79333700E379F2 /* Coordinate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Coordinate.swift; sourceTree = "<group>"; };
 		A13FCB582A793C4600E379F2 /* DeviceBounds.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceBounds.swift; sourceTree = "<group>"; };
@@ -78,6 +84,15 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		A12C55622A95FE8000D025C1 /* AI */ = {
+			isa = PBXGroup;
+			children = (
+				A12C55632A95FE8800D025C1 /* AISearch.swift */,
+				A12C555E2A95F53500D025C1 /* GameAI.swift */,
+			);
+			path = AI;
+			sourceTree = "<group>";
+		};
 		A13FCB5E2A794A9600E379F2 /* Figures */ = {
 			isa = PBXGroup;
 			children = (
@@ -146,6 +161,7 @@
 				A10D2A5C2A8B477000D9A4AA /* Board - hasFiguresBetween.swift */,
 				A1B2014E2A8A40D900A4298B /* BoardView.swift */,
 				A1B201502A8A432900A4298B /* BoardSquareView.swift */,
+				A12C55602A95F65A00D025C1 /* Move.swift */,
 			);
 			path = Board;
 			sourceTree = "<group>";
@@ -153,6 +169,7 @@
 		A1D9E01B2A937E3F00C41001 /* Game */ = {
 			isa = PBXGroup;
 			children = (
+				A12C55622A95FE8000D025C1 /* AI */,
 				A196B1AF2A8128D300796E00 /* Game.swift */,
 				A1D9E0192A937E3B00C41001 /* GameView.swift */,
 				A109140D2A94F12000303BF5 /* TakenFiguresListView.swift */,
@@ -240,13 +257,16 @@
 				A1B201512A8A432900A4298B /* BoardSquareView.swift in Sources */,
 				A196B1A42A81100F00796E00 /* Pawn.swift in Sources */,
 				A196B1AE2A81174700796E00 /* CoordinateShift.swift in Sources */,
+				A12C55612A95F65A00D025C1 /* Move.swift in Sources */,
 				A13FCB552A79308500E379F2 /* Board.swift in Sources */,
 				A196B1A62A81105600796E00 /* Rook.swift in Sources */,
 				A1D9E01D2A93819600C41001 /* MainNavigationView.swift in Sources */,
 				A109140C2A94DAD200303BF5 /* DismissButtonView.swift in Sources */,
 				A196B1AA2A81107F00796E00 /* King.swift in Sources */,
 				A196B1B02A8128D300796E00 /* Game.swift in Sources */,
+				A12C55642A95FE8800D025C1 /* AISearch.swift in Sources */,
 				A1D9E01A2A937E3B00C41001 /* GameView.swift in Sources */,
+				A12C555F2A95F53500D025C1 /* GameAI.swift in Sources */,
 				A196B1A82A81106A00796E00 /* Bishop.swift in Sources */,
 				A13FCB572A79333700E379F2 /* Coordinate.swift in Sources */,
 				A109140E2A94F12000303BF5 /* TakenFiguresListView.swift in Sources */,

@@ -19,6 +19,12 @@ struct BoardSquareView: View {
             Rectangle()
                 .fill((coordinate.y + coordinate.x) % 2 == 0 ? Color(white: 0.4) : Color(white: 0.8))
                 .overlay {
+                    if coordinate == game.lastMove?.from || coordinate == game.lastMove?.to {
+                        Color(red: 255/255, green: 248/255, blue: 100/255)
+                            .padding(5)
+                            .opacity(0.8)
+                    }
+                    
                     highLight
                         .padding(5)
                     

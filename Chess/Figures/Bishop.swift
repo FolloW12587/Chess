@@ -18,4 +18,8 @@ class Bishop: LongRangeFigure, BishopProtocol {
     override func getMoveShifts() -> Set<CoordinateShift> {
         self.getBishopShifts()
     }
+    
+    override func isSquareOnAttackLine(_ board: Board, _ coordinate: Coordinate) -> Bool {
+        board.isOnSameDiagonal(self.coordinate, coordinate)
+    }
 }

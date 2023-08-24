@@ -13,15 +13,11 @@ protocol BishopProtocol {
 
 extension BishopProtocol {
     func getBishopShifts() -> Set<CoordinateShift> {
-        var coordinateShifts: Set<CoordinateShift> = []
-        
-        for i in 1...7 {
-            coordinateShifts.insert(CoordinateShift(dx: i, dy: i))
-            coordinateShifts.insert(CoordinateShift(dx: i, dy: -i))
-            coordinateShifts.insert(CoordinateShift(dx: -i, dy: i))
-            coordinateShifts.insert(CoordinateShift(dx: -i, dy: -i))
-        }
-        
-        return coordinateShifts
+        [
+            CoordinateShift(dx: 1, dy: 1),
+            CoordinateShift(dx: 1, dy: -1),
+            CoordinateShift(dx: -1, dy: 1),
+            CoordinateShift(dx: -1, dy: -1)
+        ]
     }
 }
