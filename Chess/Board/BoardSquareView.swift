@@ -33,12 +33,12 @@ struct BoardSquareView: View {
                             .resizable()
                             .padding(5)
                     }
-            }
+                }
             
             if coordinate.x == 1 {
                 topLeftNotation(coordinate.y)
             }
-
+            
             if coordinate.y == 1 {
                 bottomRightNotation(coordinate.x)
             }
@@ -47,9 +47,11 @@ struct BoardSquareView: View {
     }
     
     var highLight: Color {
-        if game.availableMoves.contains(coordinate) {
+        if game.availableMoves.compactMap({ move in
+            move.to == coordinate ? move : nil
+        }).count > 0 {
             return Color.pink.opacity(0.5)
-                
+            
         }
         
         if let selectedFigure = game.selectedFigure, selectedFigure.coordinate == coordinate {

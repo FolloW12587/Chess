@@ -38,7 +38,7 @@ class GameAIvsAI: Game {
         if !board.isSquareEmpty(at: move.to) {
             figuresTakenByColor[currentColor]?.append(board.getFigure(at: move.to)!)
         }
-        if let pawn = board.makeMove(from: move.from, to: move.to) as? Pawn, pawn.isOnLastLine() {
+        if let pawn = board.makeMove(move: move) as? Pawn, pawn.isOnLastLine {
             board.upgradePawn(by: Queen(coordinate: pawn.coordinate, color: pawn.color, board.moves.count))
         }
         materialDiff = board.materialDiff

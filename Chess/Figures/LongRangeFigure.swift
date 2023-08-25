@@ -9,8 +9,8 @@ import Foundation
 
 
 class LongRangeFigure: Figure {
-    override func getAvailableForMoveCoordinates(_ board: Board) -> Set<Coordinate> {
-        var output: Set<Coordinate> = []
+    override func getAvailableMoves(_ board: Board) -> Set<Move> {
+        var output: Set<Move> = []
         let shifts = self.getMoveShifts()
         for shift in shifts {
             for i in 1...7 {
@@ -19,8 +19,10 @@ class LongRangeFigure: Figure {
                     break
                 }
                 
-                if isSquareAvailableForMove(board, coordinate) {
-                    output.insert(coordinate)
+                
+                let (isAvailable, figure) = isSquareAvailableForMove(board, coordinate)
+                if isAvailable {
+                    output.insert(Move(from: self.coordinate, to: coordinate, figureTaken: figure))
                 }
                 if !board.isSquareEmpty(at: coordinate) {
                     break

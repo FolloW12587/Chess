@@ -27,25 +27,26 @@ class Figure: Identifiable {
         "Unknown"
     }
     
-    func getAvailableForMoveCoordinates(_ board: Board) -> Set<Coordinate> {
-        var output: Set<Coordinate> = []
+    func getAvailableMoves(_ board: Board) -> Set<Move> {
+        var output: Set<Move> = []
         let shifts = self.getMoveShifts()
         for shift in shifts {
             let coordinate = self.coordinate.from(shift: shift)
             if !coordinate.isValid {
                 continue
             }
-            if isSquareAvailableForMove(board, coordinate) {
-                output.insert(coordinate)
+            let (isAvailable, figure) = isSquareAvailableForMove(board, coordinate)
+            if isAvailable {
+                output.insert(Move(from: self.coordinate, to: coordinate, figureTaken: figure))
             }
         }
         
         return output
     }
     
-    func isSquareAvailableForMove(_ board: Board, _ coordinate: Coordinate) -> Bool {
+    func isSquareAvailableForMove(_ board: Board, _ coordinate: Coordinate) -> (Bool, Figure?) {
         let figure = board.getFigure(at: coordinate)
-        return (figure == nil || figure!.color != self.color) && board.isKingSafeAfterMove(from: self.coordinate, to: coordinate)
+        return ((figure == nil || figure!.color != self.color) && board.isKingSafeAfterMove(move: Move(from: self.coordinate, to: coordinate, figureTaken: figure)), figure)
     }
     
     func getMoveShifts() -> Set<CoordinateShift> {

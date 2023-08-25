@@ -8,7 +8,7 @@
 import Foundation
 
 
-struct Move {
+struct Move: Hashable {
     let from: Coordinate
     let to: Coordinate
     let figureTaken: Figure?
@@ -17,5 +17,10 @@ struct Move {
         self.from = from
         self.to = to
         self.figureTaken = figureTaken
+    }
+    
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(from)
+        hasher.combine(to)
     }
 }

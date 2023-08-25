@@ -47,23 +47,23 @@ class AISearch {
                 continue
             }
             var figure = figure
-            let coordinates = figure.getAvailableForMoveCoordinates(board)
-            for coordinate in coordinates {
+            let moves = figure.getAvailableMoves(board)
+            for move in moves {
                 movesCount += 1
-                if let pawn = board.makeMove(from: figure.coordinate, to: coordinate) as? Pawn, pawn.isOnLastLine() {
+                if let pawn = board.makeMove(move: move) as? Pawn, pawn.isOnLastLine {
                     board.upgradePawn(by: Queen(coordinate: pawn.coordinate, color: pawn.color, board.moves.count))
                 }
                 let score = -search(depth-1, fromRoot+1, -beta, -alpha, currentColor.opposite())
-                figure = board.undoMove()
+                board.undoMove()
                 if fromRoot == 0 && bestMove == nil {
-                    bestMove = Move(from: figure.coordinate, to: coordinate)
+                    bestMove = move
                 }
                 if score >= beta {
                     return beta
                 }
                 if score > alpha {
                     if fromRoot == 0 {
-                        bestMove = Move(from: figure.coordinate, to: coordinate)
+                        bestMove = move
                     }
                     alpha = score
                 }

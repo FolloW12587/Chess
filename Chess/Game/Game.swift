@@ -13,7 +13,7 @@ class Game: ObservableObject {
     
     @Published var currentColor: Figure.Color = .white
     @Published var selectedFigure: Figure? = nil
-    @Published var availableMoves: Set<Coordinate> = []
+    @Published var availableMoves: Set<Move> = []
     
     @Published var figuresTakenByColor: [Figure.Color: [Figure]] = [.white: [], .black: []]
     @Published var figuresForUpdate: [Figure] = []
@@ -28,8 +28,8 @@ class Game: ObservableObject {
     
     init() {
         self.board = Board(
-            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-//            "8/1k6/5P2/8/4K3/8/1p6/8 w - - 0 1"
+//            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+            "3qk3/4p3/8/8/3P4/3K4/8/8 w - - 0 1"
         )
     }
     
@@ -56,11 +56,12 @@ class Game: ObservableObject {
             return
         }
 
-        if !availableMoves.contains(coordinate) {
-            return
+        if let move = availableMoves.compactMap({ move in
+            move.to == coordinate ? move : nil
+        }).first {
+            makeMove(move)
         }
         
-        makeMove(to: coordinate)
     }
     
     @discardableResult func checkForDrawOrStaleMate() -> Bool {
@@ -71,7 +72,7 @@ class Game: ObservableObject {
         }
         
         for figure in board.getFigures(currentColor) {
-            if figure.getAvailableForMoveCoordinates(board).count > 0 {
+            if figure.getAvailableMoves(board).count > 0 {
                 return false
             }
         }
@@ -84,15 +85,15 @@ class Game: ObservableObject {
         return true
     }
     
-    func makeMove(to coordinate: Coordinate) {
-        if !board.isSquareEmpty(at: coordinate) {
-            figuresTakenByColor[selectedFigure!.color]?.append(board.getFigure(at: coordinate)!)
+    func makeMove(_ move: Move) {
+        if let figure = move.figureTaken {
+            figuresTakenByColor[selectedFigure!.color]?.append(figure)
         }
-        if let pawn = board.makeMove(from: selectedFigure!.coordinate, to: coordinate) as? Pawn, pawn.isOnLastLine() {
-            prepareFiguresForUpdate(at: coordinate, of: pawn.color)
+        if let pawn = board.makeMove(move: move) as? Pawn, pawn.isOnLastLine {
+            prepareFiguresForUpdate(at: pawn.coordinate, of: pawn.color)
             return
         }
-        lastMove = board.moves.last
+        lastMove = move
         rotatePlayer()
         checkForDrawOrStaleMate()
         materialDiff = board.materialDiff
@@ -138,7 +139,7 @@ class Game: ObservableObject {
         }
         
         selectedFigure = figure
-        availableMoves = figure.getAvailableForMoveCoordinates(board)
+        availableMoves = figure.getAvailableMoves(board)
     }
     
     func checkForReselect(at coordinate: Coordinate) -> Bool {

@@ -100,17 +100,30 @@ class Board {
         return output
     }
     
-    @discardableResult func makeMove(from oldCoordinate: Coordinate, to newCoordinate: Coordinate) -> Figure? {
-        let move = Move(from: oldCoordinate, to: newCoordinate, figureTaken: figures[newCoordinate])
+//    @discardableResult func makeMove(from oldCoordinate: Coordinate, to newCoordinate: Coordinate) -> Figure? {
+//        let move = Move(from: oldCoordinate, to: newCoordinate, figureTaken: figures[newCoordinate])
+//        moves.append(move)
+//        if move.figureTaken != nil {
+//            materialDiff -= move.figureTaken!.material
+//        }
+//        figures[newCoordinate] = figures[oldCoordinate]
+//        figures[newCoordinate]?.coordinate = newCoordinate
+//        figures[oldCoordinate] = nil
+//        
+//        return figures[newCoordinate]
+//    }
+    
+    @discardableResult func makeMove(move: Move) -> Figure? {
         moves.append(move)
         if move.figureTaken != nil {
+            figures[move.figureTaken!.coordinate] = nil
             materialDiff -= move.figureTaken!.material
         }
-        figures[newCoordinate] = figures[oldCoordinate]
-        figures[newCoordinate]?.coordinate = newCoordinate
-        figures[oldCoordinate] = nil
+        figures[move.to] = figures[move.from]
+        figures[move.to]?.coordinate = move.to
+        figures[move.from] = nil
         
-        return figures[newCoordinate]
+        return figures[move.to]
     }
     
     @discardableResult func undoMove() -> Figure {
@@ -125,21 +138,22 @@ class Board {
         }
         figures[move.from] = figures[move.to]
         figures[move.from]!.coordinate = move.from
-        figures[move.to] = move.figureTaken
+        figures[move.to] = nil
         if move.figureTaken != nil {
+            figures[move.figureTaken!.coordinate] = move.figureTaken
             materialDiff += move.figureTaken!.material
         }
         return figures[move.from]!
     }
     
-    func isKingSafeAfterMove(from oldCoordinate: Coordinate, to newCoordinate: Coordinate) -> Bool {
+    func isKingSafeAfterMove(move: Move) -> Bool {
 //        return true
-        guard let figure = figures[oldCoordinate] else {
+        guard let figure = figures[move.from] else {
             // MARK: No figure at coordinate - invalid
             return false
         }
         
-        makeMove(from: oldCoordinate, to: newCoordinate)
+        makeMove(move: move)
         let r = !isKingChecked(of: figure.color)
         undoMove()
         return r

@@ -8,9 +8,9 @@
 import SwiftUI
 
 struct GameView: View {
-//    @StateObject var game = Game()
+    @StateObject var game = Game()
 //    @StateObject var game = GameAI(.white)
-    @StateObject var game = GameAIvsAI()
+//    @StateObject var game = GameAIvsAI()
     @Binding var selectedTab: MainNavigationView.Tabs?
     
     var body: some View {
