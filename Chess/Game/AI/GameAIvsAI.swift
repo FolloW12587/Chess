@@ -1,34 +1,24 @@
 //
-//  GameAI.swift
+//  GameAIvsAI.swift
 //  Chess
 //
-//  Created by Сергей Дубовой on 23.08.2023.
+//  Created by Сергей Дубовой on 24.08.2023.
 //
 
 import Foundation
 
 
-class GameAI: Game {
-    let aiColor: Figure.Color
+class GameAIvsAI: Game {
     let searcher = AISearch()
     
-    init(_ color: Figure.Color) {
-        aiColor = color.opposite()
+    override init() {
         super.init()
     }
     
-    override func undoMove() {
-        super.undoMove()
-        super.undoMove()
-    }
-    
-    override func makeMove(to coordinate: Coordinate) {
-        super.makeMove(to: coordinate)
-        aiTern()
-    }
-    
-    override func figureForUpdateTapped(_ figure: Figure) {
-        super.figureForUpdateTapped(figure)
+    func makeMove() {
+        if isGameEnded {
+            return
+        }
         aiTern()
     }
     

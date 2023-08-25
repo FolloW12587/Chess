@@ -9,7 +9,8 @@ import SwiftUI
 
 struct GameView: View {
 //    @StateObject var game = Game()
-    @StateObject var game = GameAI(.white)
+//    @StateObject var game = GameAI(.white)
+    @StateObject var game = GameAIvsAI()
     @Binding var selectedTab: MainNavigationView.Tabs?
     
     var body: some View {
@@ -21,10 +22,25 @@ struct GameView: View {
             }
                 
             VStack {
+                Text("\(game.materialDiff)")
+                
                 TakenFiguresListView(figures: game.figuresTakenByColor[.black]!)
-                BoardView(board: game.board)
+                BoardView()
                     .environmentObject(game as Game)
                     .disabled(game.isGameEnded)
+                    .onChange(of: game.currentColor) { newValue in
+                        if let game = game as? GameAIvsAI {
+                            Task {
+                                try? await Task.sleep(nanoseconds: 250000000)
+                                game.makeMove()
+                            }
+                        }
+                    }
+                    .onAppear {
+                        if let game = game as? GameAIvsAI {
+                            game.makeMove()
+                        }
+                    }
                 TakenFiguresListView(figures: game.figuresTakenByColor[.white]!)
                 
                 Button {
@@ -41,6 +57,7 @@ struct GameView: View {
                         )
                 }
 
+                Text("AVG moves per 0.001 seconds: \(game.avgMovesPerSecond / 1000)")
             }
             
             if !game.figuresForUpdate.isEmpty {

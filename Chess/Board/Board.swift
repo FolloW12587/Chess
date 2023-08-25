@@ -8,8 +8,9 @@
 import Foundation
 
 
-class Board: ObservableObject {
-    @Published var figures: [Coordinate:Figure] = [:]
+class Board {
+    var figures: [Coordinate:Figure] = [:]
+    var materialDiff: Int = 0
     var moves = [Move]()
     var kings = [King]()
     
@@ -100,7 +101,11 @@ class Board: ObservableObject {
     }
     
     @discardableResult func makeMove(from oldCoordinate: Coordinate, to newCoordinate: Coordinate) -> Figure? {
-        moves.append(Move(from: oldCoordinate, to: newCoordinate, figureTaken: figures[newCoordinate]))
+        let move = Move(from: oldCoordinate, to: newCoordinate, figureTaken: figures[newCoordinate])
+        moves.append(move)
+        if move.figureTaken != nil {
+            materialDiff -= move.figureTaken!.material
+        }
         figures[newCoordinate] = figures[oldCoordinate]
         figures[newCoordinate]?.coordinate = newCoordinate
         figures[oldCoordinate] = nil
@@ -114,15 +119,21 @@ class Board: ObservableObject {
         }
         let move = moves.removeLast()
         if figures[move.to]!.upgradedAtMove == moves.count + 1 {
+            materialDiff -= figures[move.to]!.material
             figures[move.to] = Pawn(coordinate: move.to, color: figures[move.to]!.color)
+            materialDiff += figures[move.to]!.material
         }
         figures[move.from] = figures[move.to]
         figures[move.from]!.coordinate = move.from
         figures[move.to] = move.figureTaken
+        if move.figureTaken != nil {
+            materialDiff += move.figureTaken!.material
+        }
         return figures[move.from]!
     }
     
-    func isKingNotCheckedAfterMove(from oldCoordinate: Coordinate, to newCoordinate: Coordinate) -> Bool {
+    func isKingSafeAfterMove(from oldCoordinate: Coordinate, to newCoordinate: Coordinate) -> Bool {
+//        return true
         guard let figure = figures[oldCoordinate] else {
             // MARK: No figure at coordinate - invalid
             return false
@@ -139,9 +150,8 @@ class Board: ObservableObject {
     }
     
     func isSquareUnderAttack(_ coordinate: Coordinate, _ color: Figure.Color) -> Bool {
-        let enemyFigures = getFigures(color)
-        for enemyFigure in enemyFigures {
-            if enemyFigure.isSquareAvailableForAttack(self, coordinate) {
+        for figure in getFigures() {
+            if figure.color == color && figure.isSquareAvailableForAttack(self, coordinate) {
                 return true
             }
         }
@@ -156,11 +166,25 @@ class Board: ObservableObject {
     func getFigure(at coordinate: Coordinate) -> Figure? {
         figures[coordinate]
     }
+    func setFigure(_ figure: Figure, at coordinate: Coordinate) {
+        figures[coordinate] = figure
+    }
+    
+    func upgradePawn(by figure: Figure) {
+        let pawn = getFigure(at: figure.coordinate)!
+        materialDiff -= pawn.material
+        figures[figure.coordinate] = figure
+        materialDiff += figure.material
+    }
     
     func getFigures(_ color: Figure.Color) -> [Figure] {
         figures.values.filter { figure in
             figure.color == color
         }
+    }
+    
+    func getFigures() -> [Figure] {
+        Array(figures.values)
     }
     
     func getKing(_ color: Figure.Color) -> King {

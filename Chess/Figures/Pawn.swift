@@ -30,11 +30,11 @@ class Pawn: Figure {
     
     override func isSquareAvailableForMove(_ board: Board, _ coordinate: Coordinate) -> Bool {
         if coordinate.x == self.coordinate.x {
-            return board.isSquareEmpty(at: coordinate) && !board.hasFiguresBetween(self.coordinate, coordinate) && board.isKingNotCheckedAfterMove(from: self.coordinate, to: coordinate)
+            return board.isSquareEmpty(at: coordinate) && !board.hasFiguresBetween(self.coordinate, coordinate) && board.isKingSafeAfterMove(from: self.coordinate, to: coordinate)
         }
         
         let figure = board.getFigure(at: coordinate)
-        return figure != nil && figure!.color != self.color && board.isKingNotCheckedAfterMove(from: self.coordinate, to: coordinate)
+        return figure != nil && figure!.color != self.color && board.isKingSafeAfterMove(from: self.coordinate, to: coordinate)
     }
     
     override func isSquareAvailableForAttack(_ board: Board, _ coordinate: Coordinate) -> Bool {

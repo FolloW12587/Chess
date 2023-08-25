@@ -9,7 +9,7 @@ import Foundation
 
 @MainActor
 class Game: ObservableObject {
-    @Published var board: Board
+    var board: Board
     
     @Published var currentColor: Figure.Color = .white
     @Published var selectedFigure: Figure? = nil
@@ -23,15 +23,19 @@ class Game: ObservableObject {
     @Published var isGameEnded = false
     var winner: Figure.Color? = nil
     
+    @Published var materialDiff: Int = 0
+    @Published var avgMovesPerSecond = 0
+    
     init() {
         self.board = Board(
-//            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-            "8/1k6/5P2/8/4K3/8/1p6/8 w - - 0 1"
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+//            "8/1k6/5P2/8/4K3/8/1p6/8 w - - 0 1"
         )
     }
     
     func figureForUpdateTapped(_ figure: Figure) {
-        board.figures[figure.coordinate] = figure
+        board.upgradePawn(by: figure)
+        materialDiff = board.materialDiff
         rotatePlayer()
         checkForDrawOrStaleMate()
     }
@@ -60,6 +64,12 @@ class Game: ObservableObject {
     }
     
     @discardableResult func checkForDrawOrStaleMate() -> Bool {
+        if board.figures.values.count == 2 {
+            // MARK: draw if only 2 kings left
+            isGameEnded = true
+            return true
+        }
+        
         for figure in board.getFigures(currentColor) {
             if figure.getAvailableForMoveCoordinates(board).count > 0 {
                 return false
@@ -85,6 +95,7 @@ class Game: ObservableObject {
         lastMove = board.moves.last
         rotatePlayer()
         checkForDrawOrStaleMate()
+        materialDiff = board.materialDiff
     }
     
     func prepareFiguresForUpdate(at coordinate: Coordinate, of color: Figure.Color) {
@@ -118,6 +129,7 @@ class Game: ObservableObject {
         board.undoMove()
         lastMove = board.moves.last
         rotatePlayer()
+        materialDiff = board.materialDiff
     }
     
     func selectFigure(at coordinate: Coordinate) {

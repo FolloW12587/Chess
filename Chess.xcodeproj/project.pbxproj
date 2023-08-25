@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A1021FB82A970CE60024E19A /* GameAIvsAI.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1021FB72A970CE60024E19A /* GameAIvsAI.swift */; };
 		A109140C2A94DAD200303BF5 /* DismissButtonView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A109140B2A94DAD200303BF5 /* DismissButtonView.swift */; };
 		A109140E2A94F12000303BF5 /* TakenFiguresListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A109140D2A94F12000303BF5 /* TakenFiguresListView.swift */; };
 		A10D2A5B2A8B3CFE00D9A4AA /* LongRangeFigure.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10D2A5A2A8B3CFE00D9A4AA /* LongRangeFigure.swift */; };
@@ -40,6 +41,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		A1021FB72A970CE60024E19A /* GameAIvsAI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameAIvsAI.swift; sourceTree = "<group>"; };
 		A109140B2A94DAD200303BF5 /* DismissButtonView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DismissButtonView.swift; sourceTree = "<group>"; };
 		A109140D2A94F12000303BF5 /* TakenFiguresListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TakenFiguresListView.swift; sourceTree = "<group>"; };
 		A10D2A5A2A8B3CFE00D9A4AA /* LongRangeFigure.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LongRangeFigure.swift; sourceTree = "<group>"; };
@@ -89,6 +91,7 @@
 			children = (
 				A12C55632A95FE8800D025C1 /* AISearch.swift */,
 				A12C555E2A95F53500D025C1 /* GameAI.swift */,
+				A1021FB72A970CE60024E19A /* GameAIvsAI.swift */,
 			);
 			path = AI;
 			sourceTree = "<group>";
@@ -134,6 +137,7 @@
 				A109140B2A94DAD200303BF5 /* DismissButtonView.swift */,
 				A1D9E01C2A93819600C41001 /* MainNavigationView.swift */,
 				A1D9E01E2A9382C200C41001 /* MenuView.swift */,
+				A12C55602A95F65A00D025C1 /* Move.swift */,
 				A1D9E01B2A937E3F00C41001 /* Game */,
 				A1B201562A8A4DE200A4298B /* Board */,
 				A13FCB582A793C4600E379F2 /* DeviceBounds.swift */,
@@ -161,7 +165,6 @@
 				A10D2A5C2A8B477000D9A4AA /* Board - hasFiguresBetween.swift */,
 				A1B2014E2A8A40D900A4298B /* BoardView.swift */,
 				A1B201502A8A432900A4298B /* BoardSquareView.swift */,
-				A12C55602A95F65A00D025C1 /* Move.swift */,
 			);
 			path = Board;
 			sourceTree = "<group>";
@@ -259,6 +262,7 @@
 				A196B1AE2A81174700796E00 /* CoordinateShift.swift in Sources */,
 				A12C55612A95F65A00D025C1 /* Move.swift in Sources */,
 				A13FCB552A79308500E379F2 /* Board.swift in Sources */,
+				A1021FB82A970CE60024E19A /* GameAIvsAI.swift in Sources */,
 				A196B1A62A81105600796E00 /* Rook.swift in Sources */,
 				A1D9E01D2A93819600C41001 /* MainNavigationView.swift in Sources */,
 				A109140C2A94DAD200303BF5 /* DismissButtonView.swift in Sources */,

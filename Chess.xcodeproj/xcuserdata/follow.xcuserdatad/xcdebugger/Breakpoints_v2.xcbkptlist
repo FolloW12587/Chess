@@ -3,4 +3,54 @@
    uuid = "EBB16669-5A56-40CA-996F-4A797BBED311"
    type = "1"
    version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "AE7A017D-2466-4A0A-96A5-5466E99ED4E9"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Chess/Game/AI/GameAIvsAI.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "26"
+            endingLineNumber = "26"
+            landmarkName = "aiTern()"
+            landmarkType = "7">
+            <Locations>
+               <Location
+                  uuid = "AE7A017D-2466-4A0A-96A5-5466E99ED4E9 - df416199252b26b5"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Chess.GameAIvsAI.aiTern() -&gt; ()"
+                  moduleName = "Chess"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/follow/Desktop/projects/xcode/Chess/Chess/Game/AI/GameAIvsAI.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "26"
+                  endingLineNumber = "26"
+                  offsetFromSymbolStart = "36">
+               </Location>
+               <Location
+                  uuid = "AE7A017D-2466-4A0A-96A5-5466E99ED4E9 - df416199252b26b5"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "Chess.GameAIvsAI.aiTern() -&gt; ()"
+                  moduleName = "Chess"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/follow/Desktop/projects/xcode/Chess/Chess/Game/AI/GameAIvsAI.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "26"
+                  endingLineNumber = "26"
+                  offsetFromSymbolStart = "224">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+   </Breakpoints>
 </Bucket>

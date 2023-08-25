@@ -12,6 +12,9 @@ class Figure: Identifiable {
     var coordinate: Coordinate
     let color: Figure.Color
     var value: Int { 0 }
+    var material: Int {
+        color == .white ? value : -value
+    }
     var upgradedAtMove: Int?
     
     init(coordinate: Coordinate, color: Figure.Color, _ upgradedAtMove: Int? = nil) {
@@ -42,7 +45,7 @@ class Figure: Identifiable {
     
     func isSquareAvailableForMove(_ board: Board, _ coordinate: Coordinate) -> Bool {
         let figure = board.getFigure(at: coordinate)
-        return (figure == nil || figure!.color != self.color) && board.isKingNotCheckedAfterMove(from: self.coordinate, to: coordinate)
+        return (figure == nil || figure!.color != self.color) && board.isKingSafeAfterMove(from: self.coordinate, to: coordinate)
     }
     
     func getMoveShifts() -> Set<CoordinateShift> {
@@ -55,7 +58,7 @@ class Figure: Identifiable {
 }
 
 extension Figure {
-    enum Color: String {
+    enum Color: String, Equatable {
         case white
         case black
         
