@@ -11,8 +11,7 @@ import Foundation
 class LongRangeFigure: Figure {
     override func getAvailableMoves(_ board: Board) -> Set<Move> {
         var output: Set<Move> = []
-        let shifts = self.getMoveShifts()
-        for shift in shifts {
+        for shift in movesShifts {
             for i in 1...7 {
                 let coordinate = self.coordinate.from(shift: shift*i)
                 if !coordinate.isValid {

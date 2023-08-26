@@ -17,6 +17,8 @@ class Figure: Identifiable {
     }
     var upgradedAtMove: Int?
     
+    var movesShifts: Set<CoordinateShift> = []
+    
     init(coordinate: Coordinate, color: Figure.Color, _ upgradedAtMove: Int? = nil) {
         self.coordinate = coordinate
         self.color = color
@@ -29,8 +31,7 @@ class Figure: Identifiable {
     
     func getAvailableMoves(_ board: Board) -> Set<Move> {
         var output: Set<Move> = []
-        let shifts = self.getMoveShifts()
-        for shift in shifts {
+        for shift in movesShifts {
             let coordinate = self.coordinate.from(shift: shift)
             if !coordinate.isValid {
                 continue
@@ -47,10 +48,6 @@ class Figure: Identifiable {
     func isSquareAvailableForMove(_ board: Board, _ coordinate: Coordinate) -> (Bool, Figure?) {
         let figure = board.getFigure(at: coordinate)
         return ((figure == nil || figure!.color != self.color) && board.isKingSafeAfterMove(move: Move(from: self.coordinate, to: coordinate, figureTaken: figure)), figure)
-    }
-    
-    func getMoveShifts() -> Set<CoordinateShift> {
-        []
     }
     
     func isSquareAvailableForAttack(_ board: Board, _ coordinate: Coordinate) -> Bool {

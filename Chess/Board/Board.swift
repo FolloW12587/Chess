@@ -119,31 +119,32 @@ class Board {
             figures[move.figureTaken!.coordinate] = nil
             materialDiff -= move.figureTaken!.material
         }
-        figures[move.to] = figures[move.from]
-        figures[move.to]?.coordinate = move.to
+        let figure = figures[move.from]
+        figure?.coordinate = move.to
+        figures[move.to] = figure
         figures[move.from] = nil
-        
-        return figures[move.to]
+        return figure
     }
     
-    @discardableResult func undoMove() -> Figure {
+    func undoMove() {
         if moves.isEmpty {
             fatalError("Can't undo move without moves made!")
         }
         let move = moves.removeLast()
-        if figures[move.to]!.upgradedAtMove == moves.count + 1 {
-            materialDiff -= figures[move.to]!.material
-            figures[move.to] = Pawn(coordinate: move.to, color: figures[move.to]!.color)
-            materialDiff += figures[move.to]!.material
+        var figure = figures[move.to]!
+        if figure.upgradedAtMove == moves.count + 1 {
+            materialDiff -= figure.material
+            figure = Pawn(coordinate: move.to, color: figures[move.to]!.color)
+            figures[move.to] = figure
+            materialDiff += figure.material
         }
-        figures[move.from] = figures[move.to]
-        figures[move.from]!.coordinate = move.from
+        figure.coordinate = move.from
+        figures[move.from] = figure
         figures[move.to] = nil
         if move.figureTaken != nil {
             figures[move.figureTaken!.coordinate] = move.figureTaken
             materialDiff += move.figureTaken!.material
         }
-        return figures[move.from]!
     }
     
     func isKingSafeAfterMove(move: Move) -> Bool {
@@ -179,9 +180,6 @@ class Board {
     
     func getFigure(at coordinate: Coordinate) -> Figure? {
         figures[coordinate]
-    }
-    func setFigure(_ figure: Figure, at coordinate: Coordinate) {
-        figures[coordinate] = figure
     }
     
     func upgradePawn(by figure: Figure) {

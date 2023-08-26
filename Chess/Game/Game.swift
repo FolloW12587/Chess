@@ -24,12 +24,13 @@ class Game: ObservableObject {
     var winner: Figure.Color? = nil
     
     @Published var materialDiff: Int = 0
+    @Published var isPaused: Bool = false
     @Published var avgMovesPerSecond = 0
     
     init() {
         self.board = Board(
-//            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-            "3qk3/4p3/8/8/3P4/3K4/8/8 w - - 0 1"
+            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+//            "8/pppppppp/PPPPPPPP/8/4k3/8/8/4K3 w - - 0 1"
         )
     }
     

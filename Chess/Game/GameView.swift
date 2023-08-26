@@ -8,10 +8,12 @@
 import SwiftUI
 
 struct GameView: View {
-    @StateObject var game = Game()
+//    @StateObject var game = Game()
 //    @StateObject var game = GameAI(.white)
-//    @StateObject var game = GameAIvsAI()
+    @StateObject var game = GameAIvsAI()
     @Binding var selectedTab: MainNavigationView.Tabs?
+    
+    @State var currentColor: Figure.Color = .black
     
     var body: some View {
         ZStack {
@@ -28,18 +30,8 @@ struct GameView: View {
                 BoardView()
                     .environmentObject(game as Game)
                     .disabled(game.isGameEnded)
-                    .onChange(of: game.currentColor) { newValue in
-                        if let game = game as? GameAIvsAI {
-                            Task {
-                                try? await Task.sleep(nanoseconds: 250000000)
-                                game.makeMove()
-                            }
-                        }
-                    }
                     .onAppear {
-                        if let game = game as? GameAIvsAI {
-                            game.makeMove()
-                        }
+                        makeMove()
                     }
                 TakenFiguresListView(figures: game.figuresTakenByColor[.white]!)
                 
@@ -47,6 +39,20 @@ struct GameView: View {
                     game.undoMove()
                 } label: {
                     Text("Undo".uppercased())
+                        .font(.title3.bold())
+                        .foregroundColor(.white)
+                        .padding(10)
+                        .frame(minWidth: 150)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(.green)
+                        )
+                }
+                
+                Button {
+                    game.isPaused.toggle()
+                } label: {
+                    Text("Pause".uppercased())
                         .font(.title3.bold())
                         .foregroundColor(.white)
                         .padding(10)
@@ -94,6 +100,16 @@ struct GameView: View {
                     RoundedRectangle(cornerRadius: 10)
                         .fill(.white)
                 )
+            }
+        }
+    }
+    
+    func makeMove() {
+        if let game = game as? GameAIvsAI, currentColor != game.currentColor {
+            self.currentColor = game.currentColor
+            game.makeMove()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                makeMove()
             }
         }
     }

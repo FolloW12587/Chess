@@ -11,12 +11,13 @@ class Queen: LongRangeFigure, BishopProtocol, RookProtocol {
     static let figureName: String = "queen"
     override var value: Int { 9 }
     
-    override func getAssetName() -> String {
-        Queen.figureName + "_" + color.rawValue
+    override init(coordinate: Coordinate, color: Figure.Color, _ upgradedAtMove: Int? = nil) {
+        super.init(coordinate: coordinate, color: color, upgradedAtMove)
+        movesShifts = self.getRookShifts().union(self.getBishopShifts())
     }
     
-    override func getMoveShifts() -> Set<CoordinateShift> {
-        return self.getRookShifts().union(self.getBishopShifts())
+    override func getAssetName() -> String {
+        Queen.figureName + "_" + color.rawValue
     }
     
     override func isSquareOnAttackLine(_ board: Board, _ coordinate: Coordinate) -> Bool {

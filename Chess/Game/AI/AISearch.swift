@@ -9,7 +9,7 @@ import Foundation
 
 
 class AISearch {
-    let startingDepth = 4
+    let startingDepth = 6
     var board: Board! = nil
     var bestMove: Move? = nil
     var movesChecked: Int = 0
@@ -46,7 +46,6 @@ class AISearch {
             if figure.color != currentColor {
                 continue
             }
-            var figure = figure
             let moves = figure.getAvailableMoves(board)
             for move in moves {
                 movesCount += 1

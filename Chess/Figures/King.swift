@@ -11,11 +11,16 @@ class King: Figure {
     static let figureName: String = "king"
     override var value: Int { 200 }
     
+    override init(coordinate: Coordinate, color: Figure.Color, _ upgradedAtMove: Int? = nil) {
+        super.init(coordinate: coordinate, color: color, upgradedAtMove)
+        self.movesShifts = getMoveShifts()
+    }
+    
     override func getAssetName() -> String {
         King.figureName + "_" + color.rawValue
     }
     
-    override func getMoveShifts() -> Set<CoordinateShift> {
+    func getMoveShifts() -> Set<CoordinateShift> {
         var output = Set<CoordinateShift>()
         for i in -1...1 {
             for j in -1...1 {

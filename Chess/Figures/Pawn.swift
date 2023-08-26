@@ -11,6 +11,11 @@ class Pawn: Figure {
     static let figureName: String = "pawn"
     override var value: Int { 1 }
     
+    override init(coordinate: Coordinate, color: Figure.Color, _ upgradedAtMove: Int? = nil) {
+        super.init(coordinate: coordinate, color: color, upgradedAtMove)
+        movesShifts = getMoveShifts()
+    }
+    
     override func getAssetName() -> String {
         Pawn.figureName + "_" + color.rawValue
     }
@@ -27,21 +32,21 @@ class Pawn: Figure {
         (coordinate.y == 7 && color == .black) || (coordinate.y == 2 && color == .white)
     }
     
-    override func getMoveShifts() -> Set<CoordinateShift> {
+    func getMoveShifts() -> Set<CoordinateShift> {
         let shift = color == .white ? 1 : -1
-        var output: Set<CoordinateShift> = [
+        return [
             CoordinateShift(dx: 0, dy: shift),
             CoordinateShift(dx: 1, dy: shift),
             CoordinateShift(dx: -1, dy: shift),
+            CoordinateShift(dx: 0, dy: shift*2)
         ]
-        if isOnStartingPosition {
-            output.insert(CoordinateShift(dx: 0, dy: shift*2))
-        }
-        return output
     }
     
     override func isSquareAvailableForMove(_ board: Board, _ coordinate: Coordinate) -> (Bool, Figure?) {
         if coordinate.x == self.coordinate.x {
+            if abs(self.coordinate.y - coordinate.y) > 1 && !isOnStartingPosition {
+                return (false, nil)
+            }
             return (board.isSquareEmpty(at: coordinate) && !board.hasFiguresBetween(self.coordinate, coordinate) && board.isKingSafeAfterMove(move: Move(from: self.coordinate, to: coordinate)), nil)
         }
         

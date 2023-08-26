@@ -16,6 +16,9 @@ class GameAIvsAI: Game {
     }
     
     func makeMove() {
+        if isPaused {
+            return
+        }
         if isGameEnded {
             return
         }

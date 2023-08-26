@@ -11,12 +11,13 @@ class Rook: LongRangeFigure, RookProtocol {
     static let figureName: String = "rook"
     override var value: Int { 5 }
     
-    override func getAssetName() -> String {
-        Rook.figureName + "_" + color.rawValue
+    override init(coordinate: Coordinate, color: Figure.Color, _ upgradedAtMove: Int? = nil) {
+        super.init(coordinate: coordinate, color: color, upgradedAtMove)
+        movesShifts = self.getRookShifts()
     }
     
-    override func getMoveShifts() -> Set<CoordinateShift> {
-        self.getRookShifts()
+    override func getAssetName() -> String {
+        Rook.figureName + "_" + color.rawValue
     }
     
     override func isSquareOnAttackLine(_ board: Board, _ coordinate: Coordinate) -> Bool {
