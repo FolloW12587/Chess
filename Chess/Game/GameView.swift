@@ -8,12 +8,8 @@
 import SwiftUI
 
 struct GameView: View {
-//    @StateObject var game = Game()
-//    @StateObject var game = GameAI(.white)
-    @StateObject var game = GameAIvsAI()
+    @StateObject var game = Game()
     @Binding var selectedTab: MainNavigationView.Tabs?
-    
-    @State var currentColor: Figure.Color = .black
     
     var body: some View {
         ZStack {
@@ -26,17 +22,15 @@ struct GameView: View {
             VStack {
                 Text("\(game.materialDiff)")
                 
-                TakenFiguresListView(figures: game.figuresTakenByColor[.black]!)
+//                TakenFiguresListView(figures: game.figuresTakenByColor[.black]!)
                 BoardView()
                     .environmentObject(game as Game)
                     .disabled(game.isGameEnded)
-                    .onAppear {
-                        makeMove()
-                    }
-                TakenFiguresListView(figures: game.figuresTakenByColor[.white]!)
+
+//                TakenFiguresListView(figures: game.figuresTakenByColor[.white]!)
                 
                 Button {
-                    game.undoMove()
+//                    game.undoMove()
                 } label: {
                     Text("Undo".uppercased())
                         .font(.title3.bold())
@@ -66,33 +60,52 @@ struct GameView: View {
                 Text("AVG moves per 0.001 seconds: \(game.avgMovesPerSecond / 1000)")
             }
             
-            if !game.figuresForUpdate.isEmpty {
+            if game.promoteAtSquare != -1 {
                 Color.gray
                     .opacity(0.7)
                     .ignoresSafeArea()
                 
                 HStack {
-                    ForEach(game.figuresForUpdate) { figure in
-                        Image(figure.getAssetName())
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: (getDeviceBounds().width - 50) / 4, height: (getDeviceBounds().width - 50) / 4)
-                            .onTapGesture {
-                                game.figureForUpdateTapped(figure)
-                            }
-                    }
+                    Image(Piece.assetName(of: Piece.Queen | game.colorTurn))
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: (getDeviceBounds().width - 50) / 4, height: (getDeviceBounds().width - 50) / 4)
+                        .onTapGesture {
+                            game.promotePieceTypeChosen(Move.Flag.PromoteToQueen)
+                        }
+                    Image(Piece.assetName(of: Piece.Bishop | game.colorTurn))
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: (getDeviceBounds().width - 50) / 4, height: (getDeviceBounds().width - 50) / 4)
+                        .onTapGesture {
+                            game.promotePieceTypeChosen(Move.Flag.PromoteToBishop)
+                        }
+                    Image(Piece.assetName(of: Piece.Rook | game.colorTurn))
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: (getDeviceBounds().width - 50) / 4, height: (getDeviceBounds().width - 50) / 4)
+                        .onTapGesture {
+                            game.promotePieceTypeChosen(Move.Flag.PromoteToRook)
+                        }
+                    Image(Piece.assetName(of: Piece.Knight | game.colorTurn))
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: (getDeviceBounds().width - 50) / 4, height: (getDeviceBounds().width - 50) / 4)
+                        .onTapGesture {
+                            game.promotePieceTypeChosen(Move.Flag.PromoteToKnight)
+                        }
                 }
             }
             
             if game.isGameEnded {
                 VStack {
-                    if let winner = game.winner {
-                        Text("Победа \(winner == .white ? "Белых" : "Черных")!".capitalized)
+//                    if let winner = game.winner {
+//                        Text("Победа \(winner == .white ? "Белых" : "Черных")!".capitalized)
+//                            .font(.title.bold())
+//                    } else {
+                        Text("Игра окончена")
                             .font(.title.bold())
-                    } else {
-                        Text("Ничья")
-                            .font(.title.bold())
-                    }
+//                    }
                 }
                 .foregroundColor(.black)
                 .padding(40)
@@ -100,16 +113,6 @@ struct GameView: View {
                     RoundedRectangle(cornerRadius: 10)
                         .fill(.white)
                 )
-            }
-        }
-    }
-    
-    func makeMove() {
-        if let game = game as? GameAIvsAI, currentColor != game.currentColor {
-            self.currentColor = game.currentColor
-            game.makeMove()
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                makeMove()
             }
         }
     }

@@ -10,144 +10,175 @@ import Foundation
 @MainActor
 class Game: ObservableObject {
     var board: Board
-    
-    @Published var currentColor: Figure.Color = .white
-    @Published var selectedFigure: Figure? = nil
-    @Published var availableMoves: Set<Move> = []
-    
-    @Published var figuresTakenByColor: [Figure.Color: [Figure]] = [.white: [], .black: []]
-    @Published var figuresForUpdate: [Figure] = []
-    @Published var kingCheckedCoordinate: Coordinate? = nil
-    @Published var lastMove: Move? = nil
+    var movesGenerator = MoveGenerator()
     
     @Published var isGameEnded = false
-    var winner: Figure.Color? = nil
+    @Published var selectedSquare: Int = -1
+    var moves: [Move] = []
+    @Published var highlightedSquares: Set<Int> = []
+    @Published var isWhiteTurn = true
+    @Published var colorTurn = Piece.White
     
-    @Published var materialDiff: Int = 0
+    @Published var promoteAtSquare: Int = -1
+    
+    @Published var lastMove: Move? = nil
     @Published var isPaused: Bool = false
     @Published var avgMovesPerSecond = 0
+    @Published var materialDiff: Int = 0
     
     init() {
-        self.board = Board(
-            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-//            "8/pppppppp/PPPPPPPP/8/4k3/8/8/4K3 w - - 0 1"
-        )
+//        self.board = Board(
+//            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
+////            "8/pppppppp/PPPPPPPP/8/4k3/8/8/4K3 w - - 0 1"
+//        )
+        self.board = Board.example
+        moves = movesGenerator.generateMoves(board: board, color: colorTurn)
     }
     
-    func figureForUpdateTapped(_ figure: Figure) {
-        board.upgradePawn(by: figure)
-        materialDiff = board.materialDiff
-        rotatePlayer()
-        checkForDrawOrStaleMate()
+    init(fen: String) {
+        self.board = Board(fen)
+        
+        let turn = fen.split(separator: " ")[1]
+        if turn == "w" {
+            isWhiteTurn = true
+            colorTurn = Piece.White
+        } else if turn == "b" {
+            isWhiteTurn = false
+            colorTurn = Piece.Black
+        } else {
+            fatalError("Can't understand whose turn it is to move!")
+        }
+        moves = movesGenerator.generateMoves(board: board, color: colorTurn)
+    }
+
+    func promotePieceTypeChosen(_ promoteType: Int) {
+        makeMove(move: Move(selectedSquare, promoteAtSquare, promoteType))
     }
     
-    func squareTapped(at coordinate: Coordinate) {
+    func squareTapped(_ square: Int) {
         if isGameEnded {
             return
         }
-        
-        if coordinate == selectedFigure?.coordinate {
-            selectedFigure = nil
-            availableMoves = []
+
+        if square == selectedSquare {
+            selectedSquare = -1
+            updateHighlightedSquares()
             return
         }
         
-        if selectedFigure == nil || checkForReselect(at: coordinate) {
-            selectFigure(at: coordinate)
+        if selectedSquare == -1 {
+            let piece = board.squares[square]
+            guard piece != 0, Piece.isColor(piece, colorTurn) else {
+                return
+            }
+            selectedSquare = square
+            updateHighlightedSquares()
+            return
+        }
+        
+        let filteredMoves = moves.filter { move in
+            move.startedSquare == selectedSquare && move.targetSquare == square
+        }
+        if filteredMoves.count == 0 {
+            return
+        }
+        if filteredMoves.count > 1 {
+            promoteAtSquare = square
             return
         }
 
-        if let move = availableMoves.compactMap({ move in
-            move.to == coordinate ? move : nil
-        }).first {
-            makeMove(move)
-        }
-        
+        makeMove(move: filteredMoves.first!)
     }
     
-    @discardableResult func checkForDrawOrStaleMate() -> Bool {
-        if board.figures.values.count == 2 {
-            // MARK: draw if only 2 kings left
-            isGameEnded = true
-            return true
+    func makeMove(move: Move) {
+        board.makeMove(move)
+        isWhiteTurn = !isWhiteTurn
+        colorTurn = Piece.oppositeColor(of: colorTurn)
+    
+        moves = movesGenerator.generateMoves(board: board, color: colorTurn)
+        selectedSquare = -1
+        promoteAtSquare = -1
+        updateHighlightedSquares()
+    }
+    
+    func updateHighlightedSquares() {
+        if selectedSquare == -1 {
+            highlightedSquares = []
         }
-        
-        for figure in board.getFigures(currentColor) {
-            if figure.getAvailableMoves(board).count > 0 {
-                return false
+        highlightedSquares = Set(moves.compactMap({ move in
+            if move.startedSquare != selectedSquare {
+                return nil
             }
-        }
-        
-        if board.isKingChecked(of: currentColor) {
-            winner = currentColor.opposite()
-        }
-        
-        isGameEnded = true
-        return true
+            return move.targetSquare
+        }))
     }
-    
-    func makeMove(_ move: Move) {
-        if let figure = move.figureTaken {
-            figuresTakenByColor[selectedFigure!.color]?.append(figure)
-        }
-        if let pawn = board.makeMove(move: move) as? Pawn, pawn.isOnLastLine {
-            prepareFiguresForUpdate(at: pawn.coordinate, of: pawn.color)
-            return
-        }
-        lastMove = move
-        rotatePlayer()
-        checkForDrawOrStaleMate()
-        materialDiff = board.materialDiff
-    }
-    
-    func prepareFiguresForUpdate(at coordinate: Coordinate, of color: Figure.Color) {
-        figuresForUpdate = [
-            Knight(coordinate: coordinate, color: color, board.moves.count),
-            Rook(coordinate: coordinate, color: color, board.moves.count),
-            Bishop(coordinate: coordinate, color: color, board.moves.count),
-            Queen(coordinate: coordinate, color: color, board.moves.count),
-        ]
-    }
-    
-    func rotatePlayer() {
-        selectedFigure = nil
-        availableMoves = []
-        figuresForUpdate = []
-        kingCheckedCoordinate = nil
-        currentColor = currentColor.opposite()
-        if board.isKingChecked(of: currentColor) {
-            kingCheckedCoordinate = board.getKing(currentColor).coordinate
-        }
-    }
-    
-    func undoMove() {
-        if board.moves.isEmpty {
-            return
-        }
-            
-        if board.moves.last?.figureTaken != nil {
-            figuresTakenByColor[currentColor.opposite()]?.removeLast()
-        }
-        board.undoMove()
-        lastMove = board.moves.last
-        rotatePlayer()
-        materialDiff = board.materialDiff
-    }
-    
-    func selectFigure(at coordinate: Coordinate) {
-        guard let figure = board.getFigure(at: coordinate), figure.color == currentColor else {
-            return
-        }
-        
-        selectedFigure = figure
-        availableMoves = figure.getAvailableMoves(board)
-    }
-    
-    func checkForReselect(at coordinate: Coordinate) -> Bool {
-        guard selectedFigure != nil, let figure = board.getFigure(at: coordinate), figure.color == selectedFigure?.color else {
-            return false
-        }
-        
-        return true
-    }
+//
+//    @discardableResult func checkForDrawOrStaleMate() -> Bool {
+//        if board.figures.values.count == 2 {
+//            // MARK: draw if only 2 kings left
+//            isGameEnded = true
+//            return true
+//        }
+//
+//        for figure in board.getFigures(currentColor) {
+//            if figure.getAvailableMoves(board).count > 0 {
+//                return false
+//            }
+//        }
+//
+//        if board.isKingChecked(of: currentColor) {
+//            winner = currentColor.opposite()
+//        }
+//
+//        isGameEnded = true
+//        return true
+//    }
+//
+//    func makeMove(_ move: Move) {
+//        if let figure = move.figureTaken {
+//            figuresTakenByColor[selectedFigure!.color]?.append(figure)
+//        }
+//        if let pawn = board.makeMove(move: move) as? Pawn, pawn.isOnLastLine {
+//            prepareFiguresForUpdate(at: pawn.coordinate, of: pawn.color)
+//            return
+//        }
+//        lastMove = move
+//        rotatePlayer()
+//        checkForDrawOrStaleMate()
+//        materialDiff = board.materialDiff
+//    }
+//
+//    func prepareFiguresForUpdate(at coordinate: Coordinate, of color: Figure.Color) {
+//        figuresForUpdate = [
+//            Knight(coordinate: coordinate, color: color, board.moves.count),
+//            Rook(coordinate: coordinate, color: color, board.moves.count),
+//            Bishop(coordinate: coordinate, color: color, board.moves.count),
+//            Queen(coordinate: coordinate, color: color, board.moves.count),
+//        ]
+//    }
+//
+//    func rotatePlayer() {
+//        selectedFigure = nil
+//        availableMoves = []
+//        figuresForUpdate = []
+//        kingCheckedCoordinate = nil
+//        currentColor = currentColor.opposite()
+//        if board.isKingChecked(of: currentColor) {
+//            kingCheckedCoordinate = board.getKing(currentColor).coordinate
+//        }
+//    }
+//
+//    func undoMove() {
+//        if board.moves.isEmpty {
+//            return
+//        }
+//
+//        if board.moves.last?.figureTaken != nil {
+//            figuresTakenByColor[currentColor.opposite()]?.removeLast()
+//        }
+//        board.undoMove()
+//        lastMove = board.moves.last
+//        rotatePlayer()
+//        materialDiff = board.materialDiff
+//    }
 }

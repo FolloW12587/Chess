@@ -16,10 +16,10 @@ struct BoardView: View {
                 HStack(spacing: 0) {
                     ForEach(1...8, id: \.self){ x in
                         let y = 9 - _y
-                        let coordinate = Coordinate(x: x, y: y)
-                        BoardSquareView(coordinate: coordinate, figure: game.board.getFigure(at: coordinate))
+                        let index = (x-1) + (y-1)*8
+                        BoardSquareView(square: index, piece: game.board.squares[index])
                             .onTapGesture {
-                                game.squareTapped(at: coordinate)
+                                game.squareTapped(index)
                             }
                     }
                 }

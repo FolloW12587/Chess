@@ -7,54 +7,6 @@
       <BreakpointProxy
          BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
          <BreakpointContent
-            uuid = "AE7A017D-2466-4A0A-96A5-5466E99ED4E9"
-            shouldBeEnabled = "No"
-            ignoreCount = "0"
-            continueAfterRunningActions = "No"
-            filePath = "Chess/Game/AI/GameAIvsAI.swift"
-            startingColumnNumber = "9223372036854775807"
-            endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "29"
-            endingLineNumber = "29"
-            landmarkName = "aiTern()"
-            landmarkType = "7">
-            <Locations>
-               <Location
-                  uuid = "AE7A017D-2466-4A0A-96A5-5466E99ED4E9 - df416199252b26b5"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "Chess.GameAIvsAI.aiTern() -&gt; ()"
-                  moduleName = "Chess"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/follow/Desktop/projects/xcode/Chess/Chess/Game/AI/GameAIvsAI.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "26"
-                  endingLineNumber = "26"
-                  offsetFromSymbolStart = "36">
-               </Location>
-               <Location
-                  uuid = "AE7A017D-2466-4A0A-96A5-5466E99ED4E9 - df416199252b26b5"
-                  shouldBeEnabled = "Yes"
-                  ignoreCount = "0"
-                  continueAfterRunningActions = "No"
-                  symbolName = "Chess.GameAIvsAI.aiTern() -&gt; ()"
-                  moduleName = "Chess"
-                  usesParentBreakpointCondition = "Yes"
-                  urlString = "file:///Users/follow/Desktop/projects/xcode/Chess/Chess/Game/AI/GameAIvsAI.swift"
-                  startingColumnNumber = "9223372036854775807"
-                  endingColumnNumber = "9223372036854775807"
-                  startingLineNumber = "26"
-                  endingLineNumber = "26"
-                  offsetFromSymbolStart = "224">
-               </Location>
-            </Locations>
-         </BreakpointContent>
-      </BreakpointProxy>
-      <BreakpointProxy
-         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
-         <BreakpointContent
             uuid = "361630EB-76B8-4913-B041-0ACF33E61C43"
             shouldBeEnabled = "No"
             ignoreCount = "0"
@@ -64,8 +16,8 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "53"
             endingLineNumber = "53"
-            landmarkName = "search(_:_:_:_:_:)"
-            landmarkType = "7">
+            landmarkName = "unknown"
+            landmarkType = "0">
          </BreakpointContent>
       </BreakpointProxy>
       <BreakpointProxy
@@ -80,7 +32,23 @@
             endingColumnNumber = "9223372036854775807"
             startingLineNumber = "65"
             endingLineNumber = "65"
-            landmarkName = "search(_:_:_:_:_:)"
+            landmarkName = "unknown"
+            landmarkType = "0">
+         </BreakpointContent>
+      </BreakpointProxy>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "3690D585-B22D-4340-B76C-EF2ADB0ACE9B"
+            shouldBeEnabled = "No"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "Chess/Game/Game.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "35"
+            endingLineNumber = "35"
+            landmarkName = "init()"
             landmarkType = "7">
          </BreakpointContent>
       </BreakpointProxy>

@@ -8,19 +8,53 @@
 import Foundation
 
 
-struct Move: Hashable {
-    let from: Coordinate
-    let to: Coordinate
-    let figureTaken: Figure?
+struct Move {
+    let value: Int
     
-    init(from: Coordinate, to: Coordinate, figureTaken: Figure? = nil) {
-        self.from = from
-        self.to = to
-        self.figureTaken = figureTaken
+    static let StartedMask: Int = 0b111111
+    static let TargetMask: Int = 0b111111_000000
+    static let FlagMask: Int = 0b1111_000000_000000
+    
+    var startedSquare: Int {
+        value & Move.StartedMask
     }
     
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(from)
-        hasher.combine(to)
+    var targetSquare: Int {
+        (value & Move.TargetMask) >> 6
+    }
+    
+    var flag: Int {
+        value >> 12
+    }
+    
+    var isPromotion: Bool {
+        let flag = flag
+        return flag == Flag.PromoteToRook || flag == Flag.PromoteToQueen || flag == Flag.PromoteToBishop || flag == Flag.PromoteToKnight
+    }
+    
+    
+    init(value: Int) {
+        self.value = value
+    }
+    
+    init(_ startSquare: Int, _ targetSquare: Int) {
+        value = startSquare | targetSquare << 6
+    }
+    
+    init(_ startSquare: Int, _ targetSquare: Int, _ flag: Int) {
+        value = startSquare | targetSquare << 6 | flag << 12
+    }
+}
+
+extension Move {
+    struct Flag {
+        static let None = 0;
+        static let EnPassantCapture = 1;
+        static let Castling = 2;
+        static let PromoteToQueen = 3;
+        static let PromoteToKnight = 4;
+        static let PromoteToRook = 5;
+        static let PromoteToBishop = 6;
+        static let PawnTwoForward = 7;
     }
 }
