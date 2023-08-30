@@ -25,8 +25,8 @@ class MoveGenerator {
     // pawn move offsets white black
     static let pawnMoveOffsets: [Int] = [8, -8]
     
-    // king offsets clockwise from bottom
-    static let kingOffsets: [Int] = [-8, -9, -1, 7, 8, 9, 1, -7]
+    // king offsets first tree - left from bot to top, then bot and top, then three right from top to bot
+    static let kingOffsets: [Int] = [-9, -1, 7, -8, 8, 9, 1, -7]
     
     var moves: [Move] = []
     var board: Board!
@@ -74,6 +74,8 @@ class MoveGenerator {
     
     
     func generateMoves(board: Board, color: Int) -> [Move] {
+        clear()
+        
         self.board = board
         self.color = color
         self.colorIndex = Piece.colorIndex(color)
@@ -92,6 +94,16 @@ class MoveGenerator {
         generatePawnMoves(board.pawns[colorIndex], MoveGenerator.pawnMoveOffsets[colorIndex], MoveGenerator.pawnAttackOffsets[colorIndex])
         
         return moves
+    }
+    
+    func clear() {
+        moves = []
+        checkRayBitmask = 0
+        pinRayBitmask = 0
+        opponentAttackMask = 0
+        inCheck = false
+        inDoubleCheck = false
+        hasPins = false
     }
     
     func updateAttackData() {
@@ -240,18 +252,21 @@ class MoveGenerator {
     
     func generateKingMoves() {
         let kingSquare = board.getKingSquare(color)
-        let kingY = kingSquare / 8
-        for offset in MoveGenerator.kingOffsets {
-            let square = kingSquare - offset
+        let kingX = kingSquare % 8
+        for (i, offset) in MoveGenerator.kingOffsets.enumerated() {
+            // is move to the left and king on the most left line
+            if i < 3 && kingX == 0 {
+                continue
+            }
+            // is move to the right and king on the most right line
+            if i > 4 && kingX == 7 {
+                continue
+            }
+            let square = kingSquare + offset
             guard square > -1 && square < 64 else {
                 continue
             }
-//            let x = square % 8
-            let y = square / 8
             guard square > -1 && square < 64 else {
-                continue
-            }
-            if abs(offset) == 1 && y != kingY {
                 continue
             }
             let piece = board.squares[square]
@@ -367,17 +382,20 @@ class MoveGenerator {
             
             let moveSquare = startingSquare + moveOffset
             if board.squares[moveSquare] == 0 {
-                if (!isPinned || isOnDirection(startingSquare, board.getKingSquare(color), moveOffset)) && (!inCheck || isSquareInCheckRay(moveSquare)) {
-                    if onPromotionLine {
-                        moves.append(Move(startingSquare, moveSquare, Move.Flag.PromoteToQueen))
-                        moves.append(Move(startingSquare, moveSquare, Move.Flag.PromoteToRook))
-                        moves.append(Move(startingSquare, moveSquare, Move.Flag.PromoteToBishop))
-                        moves.append(Move(startingSquare, moveSquare, Move.Flag.PromoteToKnight))
-                    } else {
-                        moves.append(Move(startingSquare, moveSquare))
-                        if onStartingLine && board.squares[moveSquare+moveOffset] == 0 {
-                            moves.append(Move(startingSquare, moveSquare+moveOffset, Move.Flag.PawnTwoForward))
+                if (!isPinned || isOnDirection(startingSquare, board.getKingSquare(color), moveOffset)) {
+                    if !inCheck || isSquareInCheckRay(moveSquare) {
+                        if onPromotionLine {
+                            moves.append(Move(startingSquare, moveSquare, Move.Flag.PromoteToQueen))
+                            moves.append(Move(startingSquare, moveSquare, Move.Flag.PromoteToRook))
+                            moves.append(Move(startingSquare, moveSquare, Move.Flag.PromoteToBishop))
+                            moves.append(Move(startingSquare, moveSquare, Move.Flag.PromoteToKnight))
+                        } else {
+                            moves.append(Move(startingSquare, moveSquare))
                         }
+                    }
+                    // check move two forward
+                    if onStartingLine && board.squares[moveSquare+moveOffset] == 0 && (!inCheck || isSquareInCheckRay(moveSquare+moveOffset)) {
+                        moves.append(Move(startingSquare, moveSquare+moveOffset, Move.Flag.PawnTwoForward))
                     }
                     
                 }
