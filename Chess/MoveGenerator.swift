@@ -18,18 +18,25 @@ class MoveGenerator {
     
     static let rookOffsets = verticalOffsets + horizontalOffsets
     static let queenOffsets = verticalOffsets + horizontalOffsets + diagonalOffsets
-    // clockwise from most bottom left
-    static let knightOffsets: [Int] = [-17, -10, 6, 15, 17, 10, -6, -15]
+    // left to right
+    static let knightOffsets: [Int] = [6, -10, -17, 15, 17, -15, -6, 10]
     // pawn attack offsets white left and right and black left and right
-    static let pawnAttackOffsets: [[Int]] = [[7, 9], [-7, -9]]
+    static let pawnAttackOffsets: [[Int]] = [[7, 9], [-9, -7]]
     // pawn move offsets white black
     static let pawnMoveOffsets: [Int] = [8, -8]
+    // pawn ep lines white black
+    static let pawnEPLine: [Int] = [4, 3]
     
     // king offsets first tree - left from bot to top, then bot and top, then three right from top to bot
     static let kingOffsets: [Int] = [-9, -1, 7, -8, 8, 9, 1, -7]
     
+    // contains data for each square (first index) on the board for each type
+    //
+    static let calculatedSquaresData: [[[[Int]]]] = Bundle.main.decode([[[[Int]]]].self, from: "calculatedData.json")
+    
     var moves: [Move] = []
     var board: Board!
+    var kingSquare: Int = 0
     var color: Int = 0
     var colorIndex: Int = 0
     
@@ -52,26 +59,12 @@ class MoveGenerator {
         inCheck && ((checkRayBitmask >> square) & 1 == 1)
     }
     
-    func isOnDirection(_ startingSquare: Int, _ targetSquare: Int, _ direction: Int) -> Bool {
+    func isOnDirection(_ startSquare: Int, _ targetSquare: Int, _ direction: Int) -> Bool {
         if abs(direction) > 1 {
-            return (targetSquare - startingSquare) % direction == 0
+            return (targetSquare - startSquare) % direction == 0
         }
-        return (targetSquare / 8) == (startingSquare / 8)
+        return (targetSquare / 8) == (startSquare / 8)
     }
-    
-    func isOnPromotionLine(_ line: Int) -> Bool {
-        (line == 6 && color == Piece.White) || (line == 1 && color == Piece.Black)
-    }
-    
-    func isOnStartingLine(_ line: Int) -> Bool {
-        // for pawns
-        (line == 1 && color == Piece.White) || (line == 6 && color == Piece.Black)
-    }
-    
-    func isEPLine(_ line: Int) -> Bool {
-        (line == 5 && color == Piece.White) || (line == 2 && color == Piece.Black)
-    }
-    
     
     func generateMoves(board: Board, color: Int) -> [Move] {
         clear()
@@ -79,6 +72,7 @@ class MoveGenerator {
         self.board = board
         self.color = color
         self.colorIndex = Piece.colorIndex(color)
+        self.kingSquare = board.getKingSquare(color)
         
         updateAttackData()
         generateKingMoves()
@@ -87,11 +81,11 @@ class MoveGenerator {
             return moves
         }
         
-        generateSlidingPieceMoves(board.queens[colorIndex], MoveGenerator.queenOffsets)
-        generateSlidingPieceMoves(board.rooks[colorIndex], MoveGenerator.rookOffsets)
-        generateSlidingPieceMoves(board.bishops[colorIndex], MoveGenerator.diagonalOffsets)
+        generateSlidingPieceMoves(board.queens[colorIndex], MoveGenerator.queenOffsets, Piece.Queen)
+        generateSlidingPieceMoves(board.rooks[colorIndex], MoveGenerator.rookOffsets, Piece.Rook)
+        generateSlidingPieceMoves(board.bishops[colorIndex], MoveGenerator.diagonalOffsets, Piece.Bishop)
         generateKnightMoves(board.knights[colorIndex])
-        generatePawnMoves(board.pawns[colorIndex], MoveGenerator.pawnMoveOffsets[colorIndex], MoveGenerator.pawnAttackOffsets[colorIndex])
+        generatePawnMoves(board.pawns[colorIndex])
         
         return moves
     }
@@ -107,11 +101,11 @@ class MoveGenerator {
     }
     
     func updateAttackData() {
-        updateSlidingPieceAttackData(board.queens[1 - colorIndex], MoveGenerator.queenOffsets)
-        updateSlidingPieceAttackData(board.bishops[1 - colorIndex], MoveGenerator.diagonalOffsets)
-        updateSlidingPieceAttackData(board.rooks[1 - colorIndex], MoveGenerator.rookOffsets)
+        updateSlidingPieceAttackData(board.queens[1 - colorIndex], Piece.Queen)
+        updateSlidingPieceAttackData(board.bishops[1 - colorIndex], Piece.Bishop)
+        updateSlidingPieceAttackData(board.rooks[1 - colorIndex], Piece.Rook)
         updateKnightsAttackData(board.knights[1 - colorIndex])
-        updatePawnsAttackData(board.pawns[1 - colorIndex], MoveGenerator.pawnAttackOffsets[1-colorIndex])
+        updatePawnsAttackData(board.pawns[1 - colorIndex])
         
         if inDoubleCheck {
             return
@@ -120,29 +114,18 @@ class MoveGenerator {
         updateRays()
     }
     
-    func updateSlidingPieceAttackData(_ pieces: ListOfPieces, _ offsets: [Int]) {
+    func updateSlidingPieceAttackData(_ pieces: ListOfPieces, _ pieceType: Int) {
         for i in 0..<pieces.piecesCount {
             let startSquare = pieces[i]
-            let startSquareX = startSquare % 8
-            let startSquareY = startSquare / 8
-            for offset in offsets {
-                for j in 1...7 {
-                    let square = startSquare + offset * j
-                    if square > 63 || square < 0 {
-                        break
-                    }
+            let calculatedData = MoveGenerator.calculatedSquaresData[startSquare][pieceType]
+            for directionData in calculatedData {
+                for targetSquare in directionData {
+                    let piece = board.squares[targetSquare]
                     
-                    let x = square % 8
-                    let y = square / 8
-                    guard x == startSquareX || startSquareY == y || abs(startSquareX - x) == abs(startSquareY - y) else {
-                        break
-                    }
-                    
-                    let piece = board.squares[square]
-                    opponentAttackMask |= 1 << square
+                    opponentAttackMask |= 1 << targetSquare
                     if piece != 0 {
                         // looks through king square
-                        if square != board.getKingSquare(color) {
+                        if targetSquare != kingSquare {
                             break
                         }
                         inDoubleCheck = inCheck
@@ -155,70 +138,43 @@ class MoveGenerator {
     
     func updateKnightsAttackData(_ pieces: ListOfPieces) {
         for i in 0..<pieces.piecesCount {
-            let startingSquare = pieces[i]
-            let startingX = startingSquare % 8
-            let startingY = startingSquare / 8
-            for offset in MoveGenerator.knightOffsets {
-                let square = startingSquare + offset
-                guard square > -1 && square < 64 else {
-                    continue
-                }
-                let x = square % 8
-                let y = square / 8
-                guard abs(startingX-x) + abs(startingY-y) == 3 else {
-                    continue
-                }
+            let startSquare = pieces[i]
+            let calculatedData = MoveGenerator.calculatedSquaresData[startSquare][Piece.Knight][0]
+            for square in calculatedData {
                 opponentAttackMask |= 1 << square
-                if square == board.getKingSquare(color) {
+                if square == kingSquare {
                     inDoubleCheck = inCheck
                     inCheck = true
-                    checkRayBitmask |= 1 << startingSquare
+                    checkRayBitmask |= 1 << startSquare
                 }
             }
         }
     }
     
-    func updatePawnsAttackData(_ pieces: ListOfPieces, _ offsets: [Int]) {
+    func updatePawnsAttackData(_ pieces: ListOfPieces) {
         for i in 0..<pieces.piecesCount {
-            let startingSquare = pieces[i]
-            let startingSquareY = startingSquare / 8
-            for offset in offsets{
-                let square = startingSquare + offset
-                let y = square / 8
-                guard square > -1 && square < 64 && abs(y - startingSquareY) == 1 else {
-                    continue
-                }
+            let startSquare = pieces[i]
+            let calculatedData = MoveGenerator.calculatedSquaresData[startSquare][1 - colorIndex][1]
+            for square in calculatedData {
                 opponentAttackMask |= 1 << square
-                if square == board.getKingSquare(color) {
+                if square == kingSquare {
                     inDoubleCheck = inCheck
                     inCheck = true
-                    checkRayBitmask |= 1 << startingSquare
+                    checkRayBitmask |= 1 << startSquare
                 }
             }
         }
     }
     
     func updateRays() {
-        let kingSquare = board.getKingSquare(color)
-        let startSquareX = kingSquare % 8
-        let startSquareY = kingSquare / 8
+        let calculatedData = MoveGenerator.calculatedSquaresData[kingSquare][Piece.Queen]
         
-        for (i, offset) in MoveGenerator.queenOffsets.enumerated() {
+        for (i, directionData) in calculatedData.enumerated() {
             let isDiagonalRay = i > 3
             var rayMask: UInt64 = 0
             var isFriendPieceOnTheWay = false
             
-            for j in 1...7 {
-                let square = kingSquare + offset * j
-                if square > 63 || square < 0 {
-                    break
-                }
-                
-                let x = square % 8
-                let y = square / 8
-                guard x == startSquareX || startSquareY == y || abs(startSquareX - x) == abs(startSquareY - y) else {
-                    break
-                }
+            for square in directionData {
                 rayMask |= 1 << square
                 
                 let piece = board.squares[square]
@@ -245,30 +201,15 @@ class MoveGenerator {
                     checkRayBitmask |= rayMask
                     break
                 }
+                break
             }
         }
     }
     
     
     func generateKingMoves() {
-        let kingSquare = board.getKingSquare(color)
-        let kingX = kingSquare % 8
-        for (i, offset) in MoveGenerator.kingOffsets.enumerated() {
-            // is move to the left and king on the most left line
-            if i < 3 && kingX == 0 {
-                continue
-            }
-            // is move to the right and king on the most right line
-            if i > 4 && kingX == 7 {
-                continue
-            }
-            let square = kingSquare + offset
-            guard square > -1 && square < 64 else {
-                continue
-            }
-            guard square > -1 && square < 64 else {
-                continue
-            }
+        let calculatedData = MoveGenerator.calculatedSquaresData[kingSquare][Piece.King][0]
+        for square in calculatedData {
             let piece = board.squares[square]
             if Piece.isColor(piece, color) || isSquareUnderAttack(square){
                 continue
@@ -303,35 +244,27 @@ class MoveGenerator {
         }
     }
     
-    func generateSlidingPieceMoves(_ pieces: ListOfPieces, _ offsets: [Int]) {
+    func generateSlidingPieceMoves(_ pieces: ListOfPieces, _ offsets: [Int], _ pieceType: Int) {
         for i in 0..<pieces.piecesCount {
-            let startingSquare = pieces[i]
-            let isPinned = isSquarePinned(startingSquare)
+            let startSquare = pieces[i]
+            let isPinned = isSquarePinned(startSquare)
             if inCheck && isPinned {
                 continue
             }
-            let startingSquareX = startingSquare % 8
-            let startingSquareY = startingSquare / 8
-            for offset in offsets {
-                if isPinned && !isOnDirection(startingSquare, board.getKingSquare(color), offset) {
+            let calculatedData = MoveGenerator.calculatedSquaresData[startSquare][pieceType]
+            for (j, directionData) in MoveGenerator.calculatedSquaresData[startSquare][pieceType].enumerated() {
+                if isPinned && !isOnDirection(startSquare, kingSquare, offsets[j]) {
                     continue
                 }
 
-                for j in 1...7 {
-                    let square = startingSquare + offset * j
-                    let x = square % 8
-                    let y = square / 8
-                    guard square > -1 && square < 64 && (x == startingSquareX || startingSquareY == y || abs(startingSquareX - x) == abs(startingSquareY - y)) else {
-                        break
-                    }
-                    
+                for square in directionData {
                     let piece = board.squares[square]
                     if Piece.isColor(piece, color) {
                         break
                     }
                     let preventsCheck = isSquareInCheckRay(square)
                     if preventsCheck || !inCheck {
-                        moves.append(Move(startingSquare, square))
+                        moves.append(Move(startSquare, square))
                     }
                     
                     if piece != 0 || preventsCheck {
@@ -345,94 +278,78 @@ class MoveGenerator {
     
     func generateKnightMoves(_ pieces: ListOfPieces) {
         for i in 0..<pieces.piecesCount {
-            let startingSquare = pieces[i]
-            let isPinned = isSquarePinned(startingSquare)
-            if isPinned {
+            let startSquare = pieces[i]
+            if isSquarePinned(startSquare) {
                 continue
             }
-            let startingX = startingSquare % 8
-            let startingY = startingSquare / 8
-            for offset in MoveGenerator.knightOffsets {
-                let square = startingSquare + offset
-                guard square > -1 && square < 64 else {
-                    continue
-                }
-                let x = square % 8
-                let y = square / 8
-                guard abs(startingX-x) + abs(startingY-y) == 3 else {
-                    continue
-                }
+            for square in MoveGenerator.calculatedSquaresData[startSquare][Piece.Knight][0] {
                 let piece = board.squares[square]
                 if Piece.isColor(piece, color) || (inCheck && !isSquareInCheckRay(square)) {
                     continue
                 }
-                moves.append(Move(startingSquare, square))
+                moves.append(Move(startSquare, square))
             }
         }
     }
     
-    func generatePawnMoves(_ pieces: ListOfPieces, _ moveOffset: Int, _ attackOffsets: [Int]) {
-        let epX = (board.gameState >> 4) & 0b1111
+    func generatePawnMoves(_ pieces: ListOfPieces) {
+        var epX = (board.gameState >> 4) & 0b1111
+        let hasEPPossibility = epX > 0
+        epX -= 1
         for i in 0..<pieces.piecesCount {
-            let startingSquare = pieces[i]
-            let startingSquareY = startingSquare / 8
-            let isPinned = isSquarePinned(startingSquare)
-            let onPromotionLine = isOnPromotionLine(startingSquareY)
-            let onStartingLine = isOnStartingLine(startingSquareY)
+            let startSquare = pieces[i]
             
-            let moveSquare = startingSquare + moveOffset
-            if board.squares[moveSquare] == 0 {
-                if (!isPinned || isOnDirection(startingSquare, board.getKingSquare(color), moveOffset)) {
-                    if !inCheck || isSquareInCheckRay(moveSquare) {
-                        if onPromotionLine {
-                            moves.append(Move(startingSquare, moveSquare, Move.Flag.PromoteToQueen))
-                            moves.append(Move(startingSquare, moveSquare, Move.Flag.PromoteToRook))
-                            moves.append(Move(startingSquare, moveSquare, Move.Flag.PromoteToBishop))
-                            moves.append(Move(startingSquare, moveSquare, Move.Flag.PromoteToKnight))
-                        } else {
-                            moves.append(Move(startingSquare, moveSquare))
-                        }
+            let isPinned = isSquarePinned(startSquare)
+            let calculatedData = MoveGenerator.calculatedSquaresData[startSquare][colorIndex]
+            let onEPLine = calculatedData[2][0] == 1
+            let onPromotionLine = calculatedData[2][1] == 1
+            
+            for (j, moveSquare) in calculatedData[0].enumerated() {
+                if isPinned && !isOnDirection(startSquare, kingSquare, MoveGenerator.pawnMoveOffsets[colorIndex]) || board.squares[moveSquare] != 0 {
+                    break
+                }
+                let flag = j == 0 ? 0 : Move.Flag.PawnTwoForward
+                if !inCheck || isSquareInCheckRay(moveSquare) {
+                    if onPromotionLine {
+                        moves.append(Move(startSquare, moveSquare, Move.Flag.PromoteToQueen))
+                        moves.append(Move(startSquare, moveSquare, Move.Flag.PromoteToRook))
+                        moves.append(Move(startSquare, moveSquare, Move.Flag.PromoteToBishop))
+                        moves.append(Move(startSquare, moveSquare, Move.Flag.PromoteToKnight))
+                    } else {
+                        moves.append(Move(startSquare, moveSquare, flag))
                     }
-                    // check move two forward
-                    if onStartingLine && board.squares[moveSquare+moveOffset] == 0 && (!inCheck || isSquareInCheckRay(moveSquare+moveOffset)) {
-                        moves.append(Move(startingSquare, moveSquare+moveOffset, Move.Flag.PawnTwoForward))
-                    }
-                    
                 }
             }
             
-            for offset in attackOffsets {
-                let targetSquare = startingSquare + offset
-                let x = targetSquare % 8
-                let y = targetSquare / 8
-                guard targetSquare > -1 && targetSquare < 64 && abs(y - startingSquareY) == 1 else {
-                    continue
-                }
+            for targetSquare in calculatedData[1] {
                 let piece = board.squares[targetSquare]
-                if Piece.isColor(piece, color) || (isPinned && !isOnDirection(startingSquare, board.getKingSquare(color), offset)) || (inCheck && !isSquareInCheckRay(targetSquare)) {
-                    continue
-                }
-                if onPromotionLine {
-                    moves.append(Move(startingSquare, targetSquare, Move.Flag.PromoteToQueen))
-                    moves.append(Move(startingSquare, targetSquare, Move.Flag.PromoteToRook))
-                    moves.append(Move(startingSquare, targetSquare, Move.Flag.PromoteToBishop))
-                    moves.append(Move(startingSquare, targetSquare, Move.Flag.PromoteToKnight))
+                if Piece.isColor(piece, color) || (isPinned && !isOnDirection(startSquare, kingSquare, targetSquare-startSquare)) || (inCheck && !isSquareInCheckRay(targetSquare)) {
                     continue
                 }
                 
                 if piece != 0 {
-                    moves.append(Move(startingSquare, targetSquare))
+                    if onPromotionLine {
+                        moves.append(Move(startSquare, targetSquare, Move.Flag.PromoteToQueen))
+                        moves.append(Move(startSquare, targetSquare, Move.Flag.PromoteToRook))
+                        moves.append(Move(startSquare, targetSquare, Move.Flag.PromoteToBishop))
+                        moves.append(Move(startSquare, targetSquare, Move.Flag.PromoteToKnight))
+                    } else {
+                        moves.append(Move(startSquare, targetSquare))
+                    }
                     continue
                 }
-                if isEPLine(y) && x == epX && !isInCheckAfterEPCapture(x, startingSquareY){
-                    moves.append(Move(startingSquare, targetSquare, Move.Flag.EnPassantCapture))
+                if hasEPPossibility && onEPLine {
+                    let x = targetSquare % 8
+                    if x == epX && !isInCheckAfterEPCapture(x, MoveGenerator.pawnEPLine[colorIndex]){
+                        let piece = board.squares[targetSquare - MoveGenerator.pawnMoveOffsets[colorIndex]]
+                        moves.append(Move(startSquare, targetSquare, Move.Flag.EnPassantCapture))
+                    }
                 }
             }
         }
     }
     
     func isInCheckAfterEPCapture(_ x: Int, _ y: Int) -> Bool {
-        let kingSquare = board.getKingSquare(color)
         let kingY = kingSquare / 8
         if kingY != y {
             return false
@@ -440,7 +357,7 @@ class MoveGenerator {
         let kingX = kingSquare % 8
         let offset = x - kingX > 0 ? 1 : -1
         var currentX = x + offset
-        while currentX < 8 {
+        while currentX < 8 || currentX > -1 {
             let square = currentX + y*8
             let piece = board.squares[square]
             currentX += offset

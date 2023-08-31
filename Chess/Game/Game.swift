@@ -22,15 +22,9 @@ class Game: ObservableObject {
     @Published var promoteAtSquare: Int = -1
     
     @Published var lastMove: Move? = nil
-    @Published var isPaused: Bool = false
-    @Published var avgMovesPerSecond = 0
     @Published var materialDiff: Int = 0
     
     init() {
-//        self.board = Board(
-//            "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"
-////            "8/pppppppp/PPPPPPPP/8/4k3/8/8/4K3 w - - 0 1"
-//        )
         self.board = Board.example
         moves = movesGenerator.generateMoves(board: board, color: colorTurn)
     }
@@ -49,6 +43,7 @@ class Game: ObservableObject {
             fatalError("Can't understand whose turn it is to move!")
         }
         moves = movesGenerator.generateMoves(board: board, color: colorTurn)
+        materialDiff = board.materialDiff
     }
 
     func promotePieceTypeChosen(_ promoteType: Int) {
@@ -96,9 +91,19 @@ class Game: ObservableObject {
         colorTurn = Piece.oppositeColor(of: colorTurn)
     
         moves = movesGenerator.generateMoves(board: board, color: colorTurn)
+        if moves.isEmpty {
+            if movesGenerator.inCheck {
+                print("Won \(Piece.oppositeColor(of: colorTurn))")
+            } else {
+                print("Draw")
+            }
+            isGameEnded = true
+        }
         selectedSquare = -1
         promoteAtSquare = -1
         updateHighlightedSquares()
+        materialDiff = board.materialDiff
+        lastMove = move
     }
     
     func updateHighlightedSquares() {
@@ -111,6 +116,12 @@ class Game: ObservableObject {
             }
             return move.targetSquare
         }))
+    }
+    
+    func searchTapped() {
+        let searcher = AISearch()
+        let move = searcher.startSearch(at: board, for: colorTurn)
+        print(String(reflecting: move))
     }
 //
 //    @discardableResult func checkForDrawOrStaleMate() -> Bool {

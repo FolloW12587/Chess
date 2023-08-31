@@ -8,7 +8,16 @@
 import Foundation
 
 
-struct Move {
+struct Move: CustomDebugStringConvertible {
+    var debugDescription: String {
+        let x1 = startedSquare % 8
+        let y1 = startedSquare / 8
+        let x2 = targetSquare % 8
+        let y2 = targetSquare / 8
+        
+        return "\(String(UnicodeScalar(96+x1+1)!))\(y1+1)\(String(UnicodeScalar(96+x2+1)!))\(y2+1), flag: \(flag)"
+    }
+    
     let value: Int
     
     static let StartedMask: Int = 0b111111

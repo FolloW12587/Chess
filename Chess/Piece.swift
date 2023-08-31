@@ -72,4 +72,24 @@ class Piece {
             return ""
         }
     }
+    
+    static func value(of piece: Int) -> Int {
+        let multiplier = Piece.color(of: piece) == Piece.White ? 1 : -1
+        switch Piece.type(of: piece){
+        case Piece.King:
+            return 100000*multiplier
+        case Piece.Pawn:
+            return 1*multiplier
+        case Piece.Bishop:
+            return 3*multiplier
+        case Piece.Knight:
+            return 3*multiplier
+        case Piece.Rook:
+            return 5*multiplier
+        case Piece.Queen:
+            return 9*multiplier
+        default:
+            return 0
+        }
+    }
 }

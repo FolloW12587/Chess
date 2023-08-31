@@ -91,6 +91,7 @@ class Board {
                     fatalError("Incorrect fen notation!")
                 }
                 squares[index] = figure
+                materialDiff += Piece.value(of: figure)
                 x += 1
             }
         }
@@ -157,6 +158,7 @@ class Board {
         let capturedPiece = squares[moveTo]
         if capturedPiece != 0 && move.flag != Move.Flag.EnPassantCapture {
             getPiecesList(Piece.type(of: capturedPiece), 1 - colorToMoveIndex).removePieceAtSquare(moveTo)
+            materialDiff -= Piece.value(of: capturedPiece)
         }
         
         gameState |= capturedPiece << 8
@@ -186,12 +188,14 @@ class Board {
                 fatalError("Can't promote to given type!")
             }
             movePiece = promoteType | color;
+            materialDiff += Piece.value(of: movePiece)
             pawns[colorToMoveIndex].removePieceAtSquare(moveTo);
         } else {
             switch move.flag {
             case Move.Flag.EnPassantCapture:
                 let epPawnSquare = moveTo + ((color == Piece.White) ? -8 : 8);
                 gameState |= squares[epPawnSquare] << 8
+                materialDiff -= Piece.value(of: squares[epPawnSquare])
                 squares[epPawnSquare] = 0
                 pawns[1 - colorToMoveIndex].removePieceAtSquare(epPawnSquare)
             case Move.Flag.Castling:
@@ -209,7 +213,7 @@ class Board {
         }
         
         if move.flag == Move.Flag.PawnTwoForward {
-            gameState |= (moveFrom % 8) << 4
+            gameState |= ((moveFrom % 8) + 1) << 4
         }
         
         if castleState != 0 {
@@ -247,6 +251,7 @@ class Board {
         let colorIndex = Piece.colorIndex(color)
         
         let capturedPiece = gameState >> 8 & 0b11111
+        materialDiff += Piece.value(of: capturedPiece)
         if capturedPiece != 0 && move.flag != Move.Flag.EnPassantCapture {
             getPiecesList(Piece.type(of: capturedPiece), 1 - colorIndex).addPieceAtSquare(moveTo)
         }
@@ -262,15 +267,20 @@ class Board {
         
         if move.isPromotion {
             pawns[colorIndex].addPieceAtSquare(moveFrom)
+            squares[moveFrom] = Piece.Pawn | color
             switch move.flag {
             case Move.Flag.PromoteToQueen:
                 queens[colorIndex].removePieceAtSquare(moveTo);
+                materialDiff -= Piece.value(of: Piece.Queen | color)
             case Move.Flag.PromoteToRook:
                 rooks[colorIndex].removePieceAtSquare(moveTo);
+                materialDiff -= Piece.value(of: Piece.Rook | color)
             case Move.Flag.PromoteToBishop:
                 bishops[colorIndex].removePieceAtSquare(moveTo);
+                materialDiff -= Piece.value(of: Piece.Bishop | color)
             case Move.Flag.PromoteToKnight:
                 knights[colorIndex].removePieceAtSquare(moveTo);
+                materialDiff -= Piece.value(of: Piece.Knight | color)
             default:
                 fatalError("Can't promote to given type!")
             }

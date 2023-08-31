@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct GameView: View {
-    @StateObject var game = Game()
+    @StateObject var game = Game(fen: "r4rk1/1pp1qppp/p1np1n2/2b1p1B1/2B1P1b1/P1NP1N2/1PP1QPPP/R4RK1 w - - 0 10")
     @Binding var selectedTab: MainNavigationView.Tabs?
     
     var body: some View {
@@ -29,24 +29,24 @@ struct GameView: View {
 
 //                TakenFiguresListView(figures: game.figuresTakenByColor[.white]!)
                 
-                Button {
-//                    game.undoMove()
-                } label: {
-                    Text("Undo".uppercased())
-                        .font(.title3.bold())
-                        .foregroundColor(.white)
-                        .padding(10)
-                        .frame(minWidth: 150)
-                        .background(
-                            RoundedRectangle(cornerRadius: 10)
-                                .fill(.green)
-                        )
-                }
+//                Button {
+////                    game.undoMove()
+//                } label: {
+//                    Text("Undo".uppercased())
+//                        .font(.title3.bold())
+//                        .foregroundColor(.white)
+//                        .padding(10)
+//                        .frame(minWidth: 150)
+//                        .background(
+//                            RoundedRectangle(cornerRadius: 10)
+//                                .fill(.green)
+//                        )
+//                }
                 
                 Button {
-                    game.isPaused.toggle()
+                    game.searchTapped()
                 } label: {
-                    Text("Pause".uppercased())
+                    Text("Start Search".uppercased())
                         .font(.title3.bold())
                         .foregroundColor(.white)
                         .padding(10)
@@ -56,8 +56,6 @@ struct GameView: View {
                                 .fill(.green)
                         )
                 }
-
-                Text("AVG moves per 0.001 seconds: \(game.avgMovesPerSecond / 1000)")
             }
             
             if game.promoteAtSquare != -1 {
